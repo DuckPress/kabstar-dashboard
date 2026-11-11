@@ -51,6 +51,12 @@
   --shadow-sm:  0 1px 4px rgba(13,33,73,0.10);
   --shadow-md:  0 4px 18px rgba(13,33,73,0.13);
   --shadow-lg:  0 8px 32px rgba(13,33,73,0.18);
+  /* Theme-aware roles. --white is the CARD SURFACE (it turns dark in dark
+     mode), so text drawn on navy/accent fills must use --on-accent instead. */
+  --on-accent:    #ffffff;
+  --accent:       var(--navy);        /* filled buttons / active chips & tabs */
+  --accent-hover: var(--navy-light);
+  --link:         var(--navy-light);  /* breadcrumb, links, "high" labels */
 }
 
 /* Dark theme — remaps surface/text variables; navy & gold accents persist */
@@ -67,7 +73,19 @@
   --shadow-sm:  0 1px 4px rgba(0,0,0,0.40);
   --shadow-md:  0 4px 18px rgba(0,0,0,0.50);
   --shadow-lg:  0 8px 32px rgba(0,0,0,0.60);
+  --accent:       #2f56b8;            /* navy would vanish on dark cards */
+  --accent-hover: #3d67d4;
+  --link:         #8fb0ff;
 }
+
+/* Dark-mode tints for the light-only pastel states */
+:root[data-theme="dark"] .metric-card.card-anomaly.has-anomalies { background: #241a38; border-color: rgba(167,98,255,0.35); }
+:root[data-theme="dark"] .metric-card.card-anomaly.has-anomalies .metric-value { color: #c9a6ff; }
+:root[data-theme="dark"] .metric-card.card-temp.temp-warning { background: #2e1a1d; }
+:root[data-theme="dark"] #error-banner { background: #2e1a1d; color: #ff9b9b; }
+:root[data-theme="dark"] #stale-banner { background: #2e1a1d; color: #ffb4b4; border-color: #8a3a3a; }
+:root[data-theme="dark"] #api-banner   { background: #2b2410; color: #f0d58a; }
+:root[data-theme="dark"] .status-low   { color: var(--gold-light); }
 
 /* ─── Reusable component classes (replace scattered inline styles) ─── */
 .topbar-btn {
@@ -107,7 +125,7 @@
 .sim-banner.visible { display: flex; }
 :root[data-theme="dark"] .sim-banner { background: #2a1840; color: #e9b8ff; }
 
-.tide-high { color: var(--navy-light); font-weight: 600; }
+.tide-high { color: var(--link); font-weight: 600; }
 .tide-low  { color: #a07d10; font-weight: 600; }
 :root[data-theme="dark"] .tide-low { color: var(--gold-light); }
 
@@ -187,7 +205,7 @@ html, body {
 .topbar-logo-text .system {
   font-size: 13px;
   font-weight: 600;
-  color: var(--white);
+  color: var(--on-accent);
   letter-spacing: 0.3px;
 }
 
@@ -201,8 +219,11 @@ html, body {
 .topbar-title .main-title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--white);
+  color: var(--on-accent);
   letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar-title .sub-title {
@@ -210,6 +231,9 @@ html, body {
   color: var(--gray-400);
   font-weight: 400;
   margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar-right {
@@ -277,7 +301,7 @@ html, body {
   display: block;
   width: 22px;
   height: 2px;
-  background: var(--white);
+  background: var(--on-accent);
   border-radius: 2px;
   transition: transform 0.25s, opacity 0.2s;
 }
@@ -353,10 +377,43 @@ html, body {
 .station-name {
   font-size: 12px;
   font-weight: 600;
-  color: var(--white);
-  white-space: nowrap;
+  line-height: 1.3;
+  color: var(--on-accent);
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Demo stations fold into a group under the real one */
+.sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 16px 6px;
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gray-400);
+  cursor: pointer;
+  text-align: left;
+}
+.sidebar-group-toggle:hover { color: var(--on-accent); }
+.sidebar-group-toggle .chev { display: inline-block; transition: transform 0.15s; }
+.sidebar-group-toggle.open .chev { transform: rotate(90deg); }
+.sidebar-demo-group .station-item { opacity: 0.85; }
+.sidebar-demo-group .station-item.active { opacity: 1; }
+.station-err-inline {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #f59e0b;
 }
 
 .station-item.active .station-name { color: var(--gold-light); }
@@ -488,7 +545,7 @@ html, body {
   margin-bottom: 4px;
 }
 
-.breadcrumb span { color: var(--navy-light); font-weight: 600; }
+.breadcrumb span { color: var(--link); font-weight: 600; }
 
 .station-title {
   font-size: 22px;
@@ -510,8 +567,8 @@ html, body {
 }
 
 .refresh-btn {
-  background: var(--navy);
-  color: var(--white);
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
   border-radius: var(--radius);
   padding: 9px 16px;
@@ -525,7 +582,7 @@ html, body {
   transition: background 0.18s, transform 0.12s;
 }
 
-.refresh-btn:hover { background: var(--navy-light); transform: translateY(-1px); }
+.refresh-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
 .refresh-btn:active { transform: translateY(0); }
 
 .refresh-btn svg { transition: transform 0.5s; }
@@ -667,7 +724,7 @@ html, body {
 .status-rising::before    { background: var(--green); }
 .status-falling   { background: rgba(192,57,43,0.10);  color: var(--red);    }
 .status-falling::before   { background: var(--red); }
-.status-high      { background: rgba(22,50,114,0.10);  color: var(--navy-light); }
+.status-high      { background: rgba(22,50,114,0.10);  color: var(--link); }
 .status-high::before      { background: var(--navy-light); }
 .status-low       { background: rgba(201,162,39,0.12); color: #a07d10; }
 .status-low::before       { background: var(--gold); }
@@ -713,17 +770,82 @@ html, body {
 }
 
 .zoom-preset-btn.active {
-  background: var(--navy);
-  border-color: var(--navy);
-  color: var(--white);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
 }
 
-.zoom-toolbar-sep {
-  width: 1px;
-  height: 18px;
-  background: var(--gray-200);
-  flex-shrink: 0;
-  margin: 0 2px;
+.zoom-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+}
+.zoom-seg > .zoom-preset-btn,
+.zoom-more-btn {
+  border-color: transparent;
+  background: transparent;
+}
+.zoom-seg > .zoom-preset-btn:hover,
+.zoom-more-btn:hover { background: var(--gray-100); border-color: transparent; }
+.zoom-seg > .zoom-preset-btn.active { background: var(--accent); color: var(--on-accent); }
+
+.zoom-more { position: relative; }
+.zoom-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.zoom-more-btn.active { background: var(--accent); color: var(--on-accent); }
+.zoom-more-btn svg { transition: transform 0.15s; }
+.zoom-more.open .zoom-more-btn svg { transform: rotate(180deg); }
+.zoom-more-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 130px;
+  padding: 5px;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(13,24,50,0.16);
+}
+.zoom-more.open .zoom-more-menu { display: flex; }
+.zoom-more-menu .zoom-preset-btn {
+  text-align: left;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.zoom-more-menu .zoom-preset-btn:hover { background: var(--gray-100); }
+.zoom-more-menu .zoom-preset-btn.active { background: var(--accent); color: var(--on-accent); }
+
+.zoom-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.zoom-actions .ctrl-reset-btn {
+  align-self: center;
+  padding: 4px 11px;
+  border-radius: 20px;
 }
 
 .zoom-live-btn {
@@ -790,6 +912,20 @@ html, body {
 
 .env-no-data svg { opacity: 0.35; }
 
+/* ─── SENSOR DISTANCE CHARTS (radar / ultrasonic, below the map) ───
+   Same cards as the env charts; colours match chartTheme() in app.js
+   (radar = the main level line, ultrasonic = its overlay, at full strength). */
+:root { --sensor-radar: #1e4096; --sensor-us: #6b748f; }
+:root[data-theme="dark"] { --sensor-radar: #6f9bff; --sensor-us: #aab2cc; }
+.sensor-chart-grid { margin-top: 16px; margin-bottom: 0; }
+.sensor-chart-grid[hidden] { display: none; }
+.sensor-chart-wrap { height: 180px; }
+.legend-dot-radar { background: var(--sensor-radar); }
+.legend-dot-us    { background: var(--sensor-us); }
+.sensor-stat { font-weight: 600; }
+.sensor-stat-radar { color: var(--sensor-radar); }
+.sensor-stat-us    { color: var(--sensor-us); }
+
 /* ─── CHART CARD ─── */
 .chart-card {
   background: var(--white);
@@ -838,6 +974,18 @@ html, body {
   width: 10px; height: 10px;
   border-radius: 50%;
 }
+.legend-toggle {
+  padding: 2px 8px;
+  margin: -2px 0;
+  background: none;
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.legend-toggle:hover { background: var(--gray-50); }
+.legend-toggle.off { opacity: 0.55; text-decoration: line-through; }
+.legend-toggle[hidden] { display: none; }
 
 .chart-wrap {
   position: relative;
@@ -936,8 +1084,8 @@ html, body {
 
 .zoom-out-btn {
   padding: 5px 12px;
-  background: var(--navy);
-  color: var(--white);
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
   border-radius: 6px;
   font-family: inherit;
@@ -952,7 +1100,7 @@ html, body {
   flex-shrink: 0;
 }
 
-.zoom-out-btn:hover { background: var(--navy-light); }
+.zoom-out-btn:hover { background: var(--accent-hover); }
 
 /* Cursor changes while hovering the chart */
 #mainChart { cursor: crosshair; }
@@ -1261,8 +1409,8 @@ html, body {
 .cal-time-input:disabled { opacity: .4; }
 .cal-actions { display: flex; gap: 8px; }
 .cal-actions .cal-clear { flex: 1; }
-.cal-done { color: var(--white) !important; background: var(--navy) !important; border-color: var(--navy) !important; }
-.cal-done:hover { background: var(--navy-light) !important; }
+.cal-done { color: var(--on-accent) !important; background: var(--accent) !important; border-color: var(--accent) !important; }
+.cal-done:hover { background: var(--accent-hover) !important; }
 .export-range-toggle {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 12px; color: var(--text-mid); cursor: pointer; user-select: none; white-space: nowrap;
@@ -1330,6 +1478,7 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  align-items: start;
 }
 
 .info-card {
@@ -1451,7 +1600,7 @@ html, body {
 
 /* ─── MOBILE HEADER (#7): a short title replaces the 5-word one ─── */
 .topbar-title { min-width: 0; }
-.topbar-title .short-title { display: none; font-size: 15px; font-weight: 700; color: var(--white); white-space: nowrap; }
+.topbar-title .short-title { display: none; font-size: 15px; font-weight: 700; color: var(--on-accent); white-space: nowrap; }
 @media (max-width: 720px) {
   .topbar-title .main-title  { display: none; }
   .topbar-title .short-title { display: block; }
@@ -1477,6 +1626,7 @@ html, body {
   /* Status pill → a plain coloured dot (green/amber/red still carries the state). */
   .live-badge { font-size: 0; padding: 4px; gap: 0; }
   .live-badge::before { width: 10px; height: 10px; }
+  .topbar-right { gap: 6px; }                       /* room for the whole "KAB STAR" */
 }
 
 /* ─── LIVE BADGE STATES (#3): honest header pill ─── */
@@ -1494,11 +1644,7 @@ html, body {
 }
 #stale-banner.visible { display: flex; }
 #stale-banner .banner-msg { flex: 1; min-width: 0; }
-.metric-grid.stale .metric-card { position: relative; opacity: 0.62; }
-.metric-grid.stale .metric-card::after {
-  content: 'LAPUK'; position: absolute; top: 8px; right: 10px;
-  font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #b23b3b;
-}
+.metric-grid.stale .metric-value { color: var(--text-muted); }
 
 /* ─── SIM BADGES (#6): fake error codes must look fake ─── */
 .station-err.sim { opacity: 0.55; font-style: italic; }
@@ -1558,8 +1704,8 @@ html, body {
 }
 
 .info-tab.active {
-  background: var(--navy);
-  color: var(--white);
+  background: var(--accent);
+  color: var(--on-accent);
   box-shadow: 0 2px 6px rgba(13,33,73,0.18);
 }
 
@@ -1710,8 +1856,36 @@ html, body {
   color: var(--text-dark);
   font-family: var(--font-mono); font-variant-numeric: tabular-nums;
 }
-.conn-stat-value.stale { color: #b45309; }
-.conn-stat-value.fresh { color: #15803d; }
+/* Only the "how old" figures carry the freshness colour; the rest of the
+   values stay neutral so a stale feed reads as one warning, not ten. */
+.conn-stat-value.stale { color: var(--text-mid); }
+.conn-stat-value.fresh { color: var(--text-dark); }
+#conn-last-post.stale, #conn-age.stale, #conn-qc.stale { color: #b45309; }
+#conn-age.fresh, #conn-qc.fresh { color: #15803d; }
+:root[data-theme="dark"] #conn-last-post.stale,
+:root[data-theme="dark"] #conn-age.stale,
+:root[data-theme="dark"] #conn-qc.stale { color: #fbbf24; }
+:root[data-theme="dark"] #conn-age.fresh,
+:root[data-theme="dark"] #conn-qc.fresh { color: #4ade80; }
+
+/* 9: on phones the secondary figures fold behind "More details" */
+.conn-more-btn { display: none; }
+@media (max-width: 720px) {
+  .conn-panel:not(.expanded) .conn-stat-more { display: none; }
+  .conn-more-btn {
+    display: block;
+    margin: 10px auto 0;
+    padding: 5px 14px;
+    background: none;
+    border: 1px solid var(--gray-200);
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--link);
+    cursor: pointer;
+  }
+}
 .conn-stat-value.none  { color: var(--gray-400); }
 
 /* Progress bar showing time since last post vs expected 10-min interval */
@@ -1786,7 +1960,7 @@ html, body {
   gap: 8px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--white);
+  color: var(--on-accent);
   letter-spacing: 0.2px;
 }
 
@@ -1808,7 +1982,7 @@ html, body {
 #map-overlay-close {
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.18);
-  color: var(--white);
+  color: var(--on-accent);
   border-radius: 8px;
   padding: 7px 14px;
   font-family: inherit;
@@ -1911,7 +2085,7 @@ html, body {
   width: 100%;
   margin-top: 10px;
   padding: 10px 0;
-  background: var(--navy);
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 7px;
@@ -1925,7 +2099,7 @@ html, body {
   gap: 7px;
   transition: background 0.18s;
 }
-.msp-select-btn:hover { background: var(--navy-light); }
+.msp-select-btn:hover { background: var(--accent-hover); }
 
 /* Leaflet popup overrides for overlay map */
 #map-overlay-map .leaflet-popup-content-wrapper {
@@ -1997,6 +2171,21 @@ html, body {
   }
   .conn-stat-value { overflow-wrap: anywhere; }
 }
+
+/* ─── SECONDARY BUTTON / SELECT (export row etc.) ─── */
+.btn-secondary {
+  padding: 6px 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
 
 </style>
 </head>
@@ -2071,7 +2260,6 @@ html, body {
       <div class="health-chip"><div class="hc-dot amber"></div> <span id="hc-warning-count">—</span> <span data-i18n="stWarning">Amaran</span></div>
       <div class="health-chip"><div class="hc-dot gray"></div>  <span id="hc-offline-count">—</span> <span data-i18n="stOffline">Luar Talian</span></div>
     </div>
-    <div class="sidebar-section-label" data-i18n="stationList">Senarai Stesen Tidal</div>
     <div id="station-list"></div>
     <div class="sidebar-footer">
       <strong>KAB STAR Dashboard v1.9</strong><br>
@@ -2124,7 +2312,7 @@ html, body {
             <span class="conn-stat-label" data-i18n="connAge">Masa Berlalu</span>
             <span class="conn-stat-value none" id="conn-age">—</span>
           </div>
-          <div class="conn-stat">
+          <div class="conn-stat conn-stat-more">
             <span class="conn-stat-label" data-i18n="connCount">Jumlah Bacaan (24j)</span>
             <span class="conn-stat-value none" id="conn-count">—</span>
           </div>
@@ -2136,32 +2324,33 @@ html, body {
             <span class="conn-stat-label" data-i18n="connBat">Bateri Nod</span>
             <span class="conn-stat-value none" id="conn-bat">—</span>
           </div>
-          <div class="conn-stat">
+          <div class="conn-stat conn-stat-more">
             <span class="conn-stat-label" data-i18n="connSnr">Isyarat (SNR)</span>
             <span class="conn-stat-value none" id="conn-snr">—</span>
           </div>
-          <div class="conn-stat" id="conn-tilt-wrap" hidden>
+          <div class="conn-stat conn-stat-more" id="conn-tilt-wrap" hidden>
             <span class="conn-stat-label" data-i18n="connTilt">Kecondongan</span>
             <span class="conn-stat-value" id="conn-tilt">—</span>
           </div>
-          <div class="conn-stat" id="conn-pres-wrap" hidden>
+          <div class="conn-stat conn-stat-more" id="conn-pres-wrap" hidden>
             <span class="conn-stat-label" data-i18n="connPres">Tekanan Udara</span>
             <span class="conn-stat-value" id="conn-pres">—</span>
           </div>
-          <div class="conn-stat" id="conn-sensor-wrap" hidden>
+          <div class="conn-stat conn-stat-more" id="conn-sensor-wrap" hidden>
             <span class="conn-stat-label" data-i18n="connSensor">Sensor Jarak</span>
             <span class="conn-stat-value" id="conn-sensor">—</span>
           </div>
-          <div class="conn-stat" id="conn-us-wrap" hidden>
+          <div class="conn-stat conn-stat-more" id="conn-us-wrap" hidden>
             <span class="conn-stat-label" data-i18n="connUs">Paras Ultrasonik</span>
             <span class="conn-stat-value" id="conn-us" data-i18n-title="connUsTitle" title="Bacaan sensor ultrasonik pada datum yang sama; Δ = ultrasonik − bacaan utama (radar)">—</span>
           </div>
-          <div class="conn-stat">
+          <div class="conn-stat conn-stat-more">
             <span class="conn-stat-label" data-i18n="connQc">Kualiti Rujukan (24j)</span>
             <span class="conn-stat-value none" id="conn-qc" data-i18n-title="connQcTitle" title="Kualiti tetingkap sebagai rujukan pasang surut: % bacaan dengan jam RTC sah, bilangan gap >10 min, dan sisihan piawai pancaran terburuk">—</span>
           </div>
         </div>
       </div>
+      <button type="button" class="conn-more-btn" id="conn-more-btn" aria-expanded="false">Butiran lanjut</button>
       <div class="conn-freshness-bar">
         <div class="conn-freshness-label">
           <span data-i18n="connFreshLabel">Kesegaran Data (0 = baru, 15 min = had amaran)</span>
@@ -2184,13 +2373,12 @@ html, body {
         </div>
       </div>
       <div class="station-header-right">
-        <select id="export-datum-sel" title="Datum menegak untuk eksport CSV"
-                style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--text-mid);border-radius:8px;padding:7px 9px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">
+        <select id="export-datum-sel" class="btn-secondary" title="Datum menegak untuk eksport CSV">
           <option value="GAUGE" data-i18n="datumGauge">Datum: Tolok</option>
           <option value="CD">Datum: CD</option>
           <option value="MSL">Datum: MSL</option>
         </select>
-        <button class="refresh-btn" id="export-csv-btn" title="Muat turun data sebagai CSV" data-i18n-title="exportCsvTitle" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--text-mid);">
+        <button class="refresh-btn btn-secondary" id="export-csv-btn" title="Muat turun data sebagai CSV" data-i18n-title="exportCsvTitle">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span id="btn-export-text">Eksport CSV</span>
         </button>
@@ -2259,6 +2447,10 @@ html, body {
           <div class="legend-item">
             <div class="legend-dot" style="background:#c9a227;"></div> <span data-i18n="legendAvg">Purata (Dikira)</span>
           </div>
+          <button type="button" class="legend-item legend-toggle" id="legend-anom-toggle" hidden
+                  aria-pressed="true" data-i18n-title="anomToggleTitle" title="Tunjuk/sembunyi penanda anomali">
+            <div class="legend-dot" style="background:#dc2626"></div> <span><span data-i18n="legendAnom">Anomali</span> (<span id="legend-anom-count">0</span>)</span>
+          </button>
         </div>
       </div>
       <div class="chart-wrap">
@@ -2293,23 +2485,33 @@ html, body {
       <!-- Window toolbar: TIME-based presets anchored to the newest reading -->
       <div class="zoom-toolbar">
         <span class="zoom-toolbar-label" data-i18n="quickZoom">Zum Cepat</span>
-        <button class="zoom-preset-btn" data-preset="1h"  data-i18n="p1h">1J</button>
-        <button class="zoom-preset-btn" data-preset="3h"  data-i18n="p3h">3J</button>
-        <button class="zoom-preset-btn" data-preset="6h"  data-i18n="p6h">6J</button>
-        <button class="zoom-preset-btn" data-preset="12h" data-i18n="p12h">12J</button>
-        <button class="zoom-preset-btn active" data-preset="24h" data-i18n="p24h">24J</button>
-        <button class="zoom-preset-btn" data-preset="7d"  data-i18n="p7d" data-i18n-title="p7dTitle" title="7 hari — satu minggu">7H</button>
-        <button class="zoom-preset-btn" data-preset="15d" data-i18n="p15d" data-i18n-title="p15dTitle" title="15 hari — kitaran pasang perbani/anak">15H</button>
-        <button class="zoom-preset-btn" data-preset="30d" data-i18n="p30d" data-i18n-title="p30dTitle" title="30 hari — analisis harmonik">30H</button>
-        <button class="zoom-preset-btn" data-preset="today" data-i18n="pToday">Hari ini</button>
-        <button class="zoom-preset-btn" data-preset="all" data-i18n="pAll">Semua</button>
-        <div class="zoom-toolbar-sep"></div>
-        <button class="zoom-live-btn" id="zoom-live-btn" data-i18n="latest" data-i18n-title="latestTitle" title="Kembali ke bacaan terbaharu">Terkini</button>
-        <div class="zoom-toolbar-sep"></div>
-        <button class="ctrl-reset-btn" id="zoom-reset-inline-btn" style="border-radius:20px;padding:4px 11px;">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
-          <span data-i18n="reset">Set Semula</span>
-        </button>
+        <div class="zoom-seg" role="group">
+          <button class="zoom-preset-btn" data-preset="6h"  data-i18n="p6h">6J</button>
+          <button class="zoom-preset-btn active" data-preset="24h" data-i18n="p24h">24J</button>
+          <button class="zoom-preset-btn" data-preset="7d"  data-i18n="p7d" data-i18n-title="p7dTitle" title="7 hari — satu minggu">7H</button>
+          <button class="zoom-preset-btn" data-preset="30d" data-i18n="p30d" data-i18n-title="p30dTitle" title="30 hari — analisis harmonik">30H</button>
+          <div class="zoom-more" id="zoom-more">
+            <button type="button" class="zoom-more-btn" id="zoom-more-btn" aria-haspopup="true" aria-expanded="false">
+              <span id="zoom-more-label">Lagi</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="zoom-more-menu" id="zoom-more-menu">
+              <button class="zoom-preset-btn" data-preset="1h"  data-i18n="p1h">1J</button>
+              <button class="zoom-preset-btn" data-preset="3h"  data-i18n="p3h">3J</button>
+              <button class="zoom-preset-btn" data-preset="12h" data-i18n="p12h">12J</button>
+              <button class="zoom-preset-btn" data-preset="15d" data-i18n="p15d" data-i18n-title="p15dTitle" title="15 hari — kitaran pasang perbani/anak">15H</button>
+              <button class="zoom-preset-btn" data-preset="today" data-i18n="pToday">Hari ini</button>
+              <button class="zoom-preset-btn" data-preset="all" data-i18n="pAll">Semua</button>
+            </div>
+          </div>
+        </div>
+        <div class="zoom-actions">
+          <button class="zoom-live-btn" id="zoom-live-btn" data-i18n="latest" data-i18n-title="latestTitle" title="Kembali ke bacaan terbaharu">Terkini</button>
+          <button class="ctrl-reset-btn" id="zoom-reset-inline-btn">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+            <span data-i18n="reset">Set Semula</span>
+          </button>
+        </div>
       </div>
       <!-- What is actually on the chart right now (so a mislabelled window can never hide) -->
       <div class="window-span" id="window-span" aria-live="polite">—</div>
@@ -2490,9 +2692,59 @@ html, body {
         <div class="mini-chart-wrap">
           <canvas id="miniChart" role="img" aria-label="Carta ringkas trend paras air terkini"></canvas>
         </div>
-        <div class="info-card-title" style="margin-top:16px;" data-i18n="tideEventsTitle">Air Pasang &amp; Surut Terkini</div>
-        <div id="tide-events" style="font-size:12px;"></div>
+        <div id="tide-events-block">
+          <div class="info-card-title" style="margin-top:16px;" data-i18n="tideEventsTitle">Air Pasang &amp; Surut Terkini</div>
+          <div id="tide-events" style="font-size:12px;"></div>
+        </div>
       </div>
+    </div>
+
+    <!-- Per-sensor distance charts (real station only): radar vs ultrasonic,
+         each sensor's range to the water in cm, on the same window as above -->
+    <div class="env-chart-grid sensor-chart-grid" id="sensor-chart-grid">
+
+      <!-- Radar distance -->
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-header">
+          <div>
+            <div class="env-chart-card-title" data-i18n="radarChart">Jarak Radar</div>
+            <div class="env-chart-card-subtitle"><span data-i18n="radarChartSub" data-i18n-title="distDerivTitle" title="Dikira daripada awan: datum − paras air (hanya baris yang dibaca oleh radar)">Jarak radar ke permukaan air (cm) berbanding masa</span> &nbsp;·&nbsp; <span id="radar-chart-stat" class="sensor-stat sensor-stat-radar">—</span></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot legend-dot-radar"></div> <span data-i18n="legendRadar">Radar (cm)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(201,162,39,0.7)"></div> <span data-i18n="legendMean">Purata</span></div>
+          </div>
+        </div>
+        <div class="env-chart-wrap sensor-chart-wrap">
+          <canvas id="radarChart" role="img" aria-label="Carta jarak radar (cm) mengikut masa" data-i18n-aria="radarChartAria"></canvas>
+          <div class="env-no-data" id="radar-no-data" style="display:none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <span data-i18n="radarNoData">Tiada data radar dalam tetingkap ini</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ultrasonic distance -->
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-header">
+          <div>
+            <div class="env-chart-card-title" data-i18n="usChart">Jarak Ultrasonik</div>
+            <div class="env-chart-card-subtitle"><span data-i18n="usChartSub" data-i18n-title="distDerivUsTitle" title="Dikira daripada awan: datum − paras ultrasonik (termasuk anjakan Config us_offset_cm)">Jarak ultrasonik ke permukaan air (cm) berbanding masa</span> &nbsp;·&nbsp; <span id="us-chart-stat" class="sensor-stat sensor-stat-us">—</span></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot legend-dot-us"></div> <span data-i18n="legendUs">Ultrasonik (cm)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(201,162,39,0.7)"></div> <span data-i18n="legendMean">Purata</span></div>
+          </div>
+        </div>
+        <div class="env-chart-wrap sensor-chart-wrap">
+          <canvas id="usChart" role="img" aria-label="Carta jarak ultrasonik (cm) mengikut masa" data-i18n-aria="usChartAria"></canvas>
+          <div class="env-no-data" id="us-no-data" style="display:none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <span data-i18n="usNoData">Tiada data ultrasonik dalam tetingkap ini</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -2501,8 +2753,7 @@ html, body {
 <!-- ═══ FOOTER ═══ -->
 <footer id="footer">
   <span class="footer-logo">KAB STAR</span>
-  <span>Sains Ukur Geomatik</span>
-  <span>Versi 1.9 · Sains Ukur Geomatik CFAP2206B</span>
+  <span>Sains Ukur Geomatik · UiTM Shah Alam · CFAP2206B</span>
 </footer>
 
 <script>window.KAB_SINGLE_FILE = true;</script>
@@ -2514,8 +2765,13 @@ html, body {
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw3sLNBleij3DFtf_uylJHa6sCmmiebRlrW77K0UTe0OWtrPwkEh06lYsg0HpasSav9Qg/exec";
 const CHART_FONT = '"Inter", "Roboto", Helvetica, Arial, sans-serif';   // Chart.js has no CSS-variable access
 const DASHBOARD_READ_LIMIT = 5000;
-const DASHBOARD_NORMAL_REFRESH_MS = 60 * 1000;
-const DASHBOARD_SURVEY_REFRESH_MS = 30 * 1000;
+// The first read asks for about 6 hours of rows (at the 15 s cadence) so the page
+// paints quickly; the full DASHBOARD_READ_LIMIT window, about 21 hours, follows in
+// the background (loadFullHistory). Older windows use the 10-minute means.
+const DASHBOARD_FIRST_N = 1500;
+let g_readN = DASHBOARD_FIRST_N;   // rows a full (non-incremental) read asks for
+const DASHBOARD_NORMAL_REFRESH_MS = 15 * 1000;
+const DASHBOARD_SURVEY_REFRESH_MS = 15 * 1000;
 // Back off when the real station isn't delivering — re-downloading the whole
 // window every minute while it's dead burns Apps Script quota for nothing.
 const DASHBOARD_STALE_REFRESH_MS   =  5 * 60 * 1000;   // status 'warning'
@@ -2574,11 +2830,14 @@ let g_anomalyFlags = [];
 // Drives the export datum selector, chart datum lines and survey polling.
 let g_stationMeta = {
   datum_cm: null, cd_off: 0, msl_off: 0, survey_mode: 0,
-  benchmark_id: '', levelling_date: ''
+  benchmark_id: '', levelling_date: '',
+  max_sd_cm: 0, max_skew_s: 0   // Config QC limits (0 = no limit), same gates as ?action=tide
 };
 let miniChartInstance = null;
 let tempChartInstance = null;
 let humidChartInstance = null;
+let radarChartInstance = null;   // per-sensor distance charts (below the map)
+let usChartInstance    = null;
 
 // Chart filter state — applied before rendering
 let chartFilter = {
@@ -2806,7 +3065,7 @@ async function fetchData() {
   // the cursor, from a small tail window.
   const canIncr = !!(g_rawApi && g_cursor);
   const url = GAS_API_URL + (GAS_API_URL.indexOf('?') >= 0 ? '&' : '?') +
-              'read=1&n=' + encodeURIComponent(canIncr ? DASHBOARD_INCR_N : DASHBOARD_READ_LIMIT) +
+              'read=1&n=' + encodeURIComponent(canIncr ? DASHBOARD_INCR_N : g_readN) +
               (canIncr ? '&since=' + encodeURIComponent(g_cursor) : '');
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -2933,8 +3192,8 @@ function buildSeries(readings, opts) {
 
 /* ═══════════════════════════════════════════════════
    LONG WINDOWS (7H / 15H / 30H / Semua)
-   The raw read is capped at DASHBOARD_READ_LIMIT rows (≈3.5 days at one
-   reading a minute), so windows longer than that come from the backend's
+   The raw read is capped at DASHBOARD_READ_LIMIT rows (≈21 hours at one
+   reading per 15 s), so windows longer than that come from the backend's
    bucket-mean read (?read=1&days=31&bucket=600 → 10-minute means). Real
    station (index 0) only; fetched on demand, refreshed at most every
    LONG_REFRESH_MS, and never mixed into the raw series (cards, exports and
@@ -3049,7 +3308,9 @@ function parseApiData(raw) {
       msl_off:        Number(raw.msl_offset_cm) || 0,
       survey_mode:    Number(raw.survey_mode) ? 1 : 0,
       benchmark_id:   String(raw.benchmark_id || ''),
-      levelling_date: String(raw.levelling_date || '')
+      levelling_date: String(raw.levelling_date || ''),
+      max_sd_cm:      Number(raw.survey_max_sd_cm) || 0,
+      max_skew_s:     Number(raw.max_clock_skew_s) || 0
     };
   }
 
@@ -3296,7 +3557,7 @@ function harmonicFit(values, timestamps) {
 // at gauge height = −offset, since the offsets are "gauge zero above datum")
 // and High/Low-water markers for the displayed window. Requires the
 // chartjs-plugin-annotation script loaded in <head>.
-function buildMainChartAnnotations(values, labels) {
+function buildMainChartAnnotations(values, labels, xs) {
   const ann = {};
 
   const mkDatumLine = (offCm, name) => ({
@@ -3328,7 +3589,7 @@ function buildMainChartAnnotations(values, labels) {
   if (hiI >= 0 && loI >= 0 && hiI !== loI && (hi - lo) >= TIDE_MIN_RANGE_M) {
     const mkTideLabel = (idx, val, tag, colour, bg, yAdj) => ({
       type: 'label',
-      xValue: idx, yValue: val, yAdjust: yAdj,
+      xValue: xs ? xs[idx] : idx, yValue: val, yAdjust: yAdj,
       content: [`${tag} ${val.toFixed(3)} m`, labels[idx] || ''],
       font: { size: 9, family: CHART_FONT, weight: '700' },
       color: colour, backgroundColor: bg, padding: 3, borderRadius: 4,
@@ -3339,27 +3600,181 @@ function buildMainChartAnnotations(values, labels) {
   return ann;
 }
 
+/**
+ * Largest-Triangle-Three-Buckets: indices of about `target` points that keep
+ * the line's shape (peaks, troughs), always including the first and last.
+ * x = index — readings are near-uniform in time. A bucket holding a gap (null)
+ * also keeps one null so the drawn line still breaks there. null = no thinning.
+ */
+function lttbIndices(values, target) {
+  const n = values.length;
+  if (n <= target || target < 3) return null;
+  const ok = i => values[i] !== null && values[i] !== undefined && !isNaN(values[i]);
+  const out = [0];
+  const size = (n - 2) / (target - 2);
+  let a = 0;                                    // last selected index
+  for (let b = 0; b < target - 2; b++) {
+    const start = Math.floor(b * size) + 1;
+    const end   = Math.min(Math.floor((b + 1) * size) + 1, n - 1);
+    // Average of the NEXT bucket — the third corner of each triangle.
+    const nStart = end, nEnd = Math.min(Math.floor((b + 2) * size) + 1, n);
+    let ax = 0, ay = 0, cnt = 0;
+    for (let i = nStart; i < nEnd; i++) if (ok(i)) { ax += i; ay += values[i]; cnt++; }
+    if (cnt) { ax /= cnt; ay /= cnt; } else { ax = nEnd - 1; ay = ok(a) ? values[a] : 0; }
+    let best = -1, bestArea = -1, gap = -1;
+    const pa = ok(a) ? values[a] : ay;
+    for (let i = start; i < end; i++) {
+      if (!ok(i)) { if (gap < 0) gap = i; continue; }
+      const area = Math.abs((a - ax) * (values[i] - pa) - (a - i) * (ay - pa));
+      if (area > bestArea) { bestArea = area; best = i; }
+    }
+    if (gap >= 0) out.push(gap);
+    if (best >= 0) { out.push(best); a = best; }
+  }
+  out.push(n - 1);
+  return Array.from(new Set(out)).sort((x, y) => x - y);
+}
+
+// The main chart draws at most this many points; lttbIndices() thins longer
+// windows first (keeping every anomaly), so Chart.js's own decimation is off.
+const MAIN_CHART_MAX_PTS = 600;
+
+// Show the red anomaly markers on the main chart (legend toggle, remembered).
+let g_showAnomalies = true;
+try { g_showAnomalies = localStorage.getItem('kabstar_anom') !== '0'; } catch (e) {}
+
+/** Colours the charts use for the current light/dark theme. */
+function chartTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return dark
+    ? { line: '#6f9bff', fillTop: 'rgba(111,155,255,0.22)', fillBot: 'rgba(111,155,255,0.02)',
+        grid: 'rgba(255,255,255,0.06)', tick: '#959ec0', us: 'rgba(170,178,204,0.85)',
+        usSolid: '#aab2cc', usFillTop: 'rgba(170,178,204,0.22)', usFillBot: 'rgba(170,178,204,0.02)' }
+    : { line: '#1e4096', fillTop: 'rgba(30,64,150,0.18)', fillBot: 'rgba(30,64,150,0.01)',
+        grid: 'rgba(0,0,0,0.05)', tick: '#6b748f', us: 'rgba(107,116,143,0.80)',
+        usSolid: '#6b748f', usFillTop: 'rgba(107,116,143,0.20)', usFillBot: 'rgba(107,116,143,0.01)' };
+}
+
+/** Epoch ms of a Malaysia-local "YYYY-MM-DDTHH:mm[:ss]" stamp, NaN if unusable. */
+function mytMs(ts) {
+  if (!ts || ts.length < 16) return NaN;
+  return Date.parse(ts.slice(0, 16) + ':' + (ts.length >= 19 ? ts.slice(17, 19) : '00') + '+08:00');
+}
+
+// Tick spacing for a time axis: the first step giving at most `maxTicks` ticks.
+const TIME_STEPS_MS = [1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 2880, 10080]
+  .map(m => m * 60000);
+function timeTickStep(spanMs, maxTicks) {
+  return TIME_STEPS_MS.find(s => spanMs / s <= maxTicks) || TIME_STEPS_MS[TIME_STEPS_MS.length - 1];
+}
+
+/** Axis label for an instant, in Malaysia time, sized to the window span. */
+function fmtAxisTime(ms, spanMs) {
+  const d  = new Date(ms + MYT_OFFSET_MS);
+  const p  = n => String(n).padStart(2, '0');
+  const hm = p(d.getUTCHours()) + ':' + p(d.getUTCMinutes());
+  const dm = p(d.getUTCDate()) + '/' + p(d.getUTCMonth() + 1);
+  if (spanMs > 3 * 86400000) return dm;
+  if (spanMs > 18 * 3600000) return [hm, dm];
+  return hm;
+}
+
+/**
+ * Linear x-axis config that reads as a time axis: ticks on round Malaysia-time
+ * boundaries (built in afterBuildTicks), labelled by fmtAxisTime. With xs = null
+ * (no usable timestamps) it falls back to the point index and its label.
+ */
+function timeAxisX(xs, labels, theme) {
+  const timed = !!xs;
+  const min = timed ? xs[0] : 0;
+  const max = timed ? xs[xs.length - 1] : Math.max(0, labels.length - 1);
+  const span = Math.max(1, max - min);
+  const maxTicks = window.innerWidth < 600 ? 5 : 10;
+  return {
+    type: 'linear',
+    min, max,
+    grid: { color: theme.grid, drawBorder: false },
+    afterBuildTicks: (axis) => {
+      if (!timed) return;
+      const step = timeTickStep(span, maxTicks);
+      const off  = MYT_OFFSET_MS;
+      const ticks = [];
+      for (let t = Math.ceil((min + off) / step) * step - off; t <= max; t += step) ticks.push({ value: t });
+      axis.ticks = ticks;
+    },
+    ticks: {
+      color: theme.tick,
+      font: { size: 10, family: CHART_FONT },
+      maxRotation: 0,
+      autoSkip: !timed,
+      maxTicksLimit: maxTicks,
+      callback: (v) => timed ? fmtAxisTime(v, span) : (labels[Math.round(v)] || ''),
+    },
+  };
+}
+
+/**
+ * Lines break across real outages: consecutive points farther apart than this
+ * are not joined. 3x the typical interval, never under 10 minutes.
+ */
+function gapSpanMs(xs) {
+  if (!xs || xs.length < 3) return 10 * 60000;
+  const d = [];
+  for (let i = 1; i < xs.length; i++) d.push(xs[i] - xs[i - 1]);
+  d.sort((a, b) => a - b);
+  return Math.max(10 * 60000, 3 * d[Math.floor(d.length / 2)]);
+}
+
 function renderMainChart(labels, values, mean, prediction, timestamps, usValues) {
   const ctx = document.getElementById('mainChart').getContext('2d');
+  const th  = chartTheme();
   // Ultrasonic cross-check series (dual-sensor nodes): drawn only when the
   // window actually has some, so single-sensor stations see no change.
-  const usSeries = usValues || [];
-  const hasUs    = usSeries.some(v => v !== null && v !== undefined);
+  let usSeries = usValues || [];
+  const hasUs  = usSeries.some(v => v !== null && v !== undefined);
 
   // Compute average
   const validVals = values.filter(v => v !== null && !isNaN(v));
   const computedAvg = validVals.length > 0
     ? validVals.reduce((a, b) => a + b, 0) / validVals.length
     : mean;
-  const avgLine = values.map(() => Math.round(computedAvg * 1000) / 1000);
 
-  // Anomaly detection — produces per-point colours and radii
-  const anomalyFlags = detectAnomalies(values, timestamps);
-  g_anomalyFlags = anomalyFlags;   // refresh what the tooltip callbacks see
+  // Anomaly detection on the FULL series (counts and flags stay exact)
+  let anomalyFlags = detectAnomalies(values, timestamps);
   const anomalyCount = anomalyFlags.filter(Boolean).length;
-  const pointColours = values.map((_, i) => anomalyFlags[i] ? '#dc2626' : 'transparent');
-  const pointRadii   = values.map((_, i) => anomalyFlags[i] ? 5 : 0);
-  const pointHoverR  = values.map((_, i) => anomalyFlags[i] ? 7 : 5);
+
+  // Thin long windows before drawing — every anomaly point is kept so it still
+  // shows. `full` keeps the original arrays for exact drag-selection stats.
+  const full = { values, idx: null };
+  let idx = lttbIndices(values, MAIN_CHART_MAX_PTS);
+  if (idx) {
+    anomalyFlags.forEach((f, i) => { if (f) idx.push(i); });
+    idx = Array.from(new Set(idx)).sort((x, y) => x - y);
+    const pick = arr => (arr && arr.length === values.length) ? idx.map(i => arr[i]) : arr;
+    labels       = pick(labels);
+    timestamps   = pick(timestamps);
+    prediction   = pick(prediction);
+    usSeries     = pick(usSeries);
+    anomalyFlags = pick(anomalyFlags);
+    values       = pick(values);
+    full.idx     = idx;
+  }
+  g_anomalyFlags = anomalyFlags;   // refresh what the tooltip callbacks see
+
+  // x positions: real time when every point has a usable stamp, so outages
+  // show at their true width; otherwise the point index.
+  let xs = (timestamps && timestamps.length === values.length) ? timestamps.map(mytMs) : null;
+  if (xs && xs.some(x => isNaN(x))) xs = null;
+  const X = i => xs ? xs[i] : i;
+  const pts = arr => (arr || []).map((y, i) => ({ x: X(i), y: (y === undefined ? null : y) }));
+  const spanGaps = xs ? gapSpanMs(xs) : false;
+
+  const avgY = Math.round(computedAvg * 1000) / 1000;
+  const avgLine = values.length ? [{ x: X(0), y: avgY }, { x: X(values.length - 1), y: avgY }] : [];
+  const showA = g_showAnomalies;
+  const pointColours = values.map((_, i) => (showA && anomalyFlags[i]) ? 'rgba(220,38,38,0.85)' : 'transparent');
+  const pointRadii   = values.map((_, i) => (showA && anomalyFlags[i]) ? 3 : 0);
+  const pointHoverR  = values.map((_, i) => anomalyFlags[i] ? 5 : 4);
 
   // Update anomaly KPI card
   const anomCard = document.getElementById('card-anomaly-wrap');
@@ -3370,30 +3785,34 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
     ? T('anomCount', { n: anomalyCount })
     : T('anomNone');
   if (anomCard) anomCard.classList.toggle('has-anomalies', anomalyCount > 0);
+  syncAnomalyLegend(anomalyCount);
+
+  const annotations = buildMainChartAnnotations(values, labels, xs);
 
   if (mainChartInstance) {
     mainChartInstance._tsStrings = timestamps || [];   // for drag-zoom
-    mainChartInstance.data.labels = labels;
-    mainChartInstance.data.datasets[0].data = values;
-    mainChartInstance.data.datasets[0].pointBackgroundColor = pointColours;
-    mainChartInstance.data.datasets[0].pointRadius = pointRadii;
-    mainChartInstance.data.datasets[0].pointHoverRadius = pointHoverR;
-    mainChartInstance.data.datasets[1].data = avgLine;
-    mainChartInstance.options.plugins.annotation =
-      { annotations: buildMainChartAnnotations(values, labels) };
-    if (mainChartInstance.data.datasets[2]) {
-      mainChartInstance.data.datasets[2].data = prediction || [];
-    }
-    if (mainChartInstance.data.datasets[3]) {
-      mainChartInstance.data.datasets[3].data   = usSeries;
-      mainChartInstance.data.datasets[3].hidden = !hasUs;
-    }
+    mainChartInstance._labels    = labels;
+    mainChartInstance._full      = full;
+    const ds = mainChartInstance.data.datasets;
+    ds[0].data = pts(values);
+    ds[0].spanGaps = spanGaps;
+    ds[0].pointBackgroundColor = pointColours;
+    ds[0].pointBorderColor     = pointColours;
+    ds[0].pointRadius          = pointRadii;
+    ds[0].pointHoverRadius     = pointHoverR;
+    ds[1].data = avgLine;
+    ds[2].data = prediction ? pts(prediction) : [];
+    ds[2].spanGaps = spanGaps;
+    ds[3].data = pts(usSeries);
+    ds[3].spanGaps = spanGaps;
+    ds[3].hidden = !hasUs;
+    mainChartInstance.options.scales.x = timeAxisX(xs, labels, th);
+    mainChartInstance.options.plugins.annotation = { annotations };
     const avgEl = document.getElementById('chart-avg-display');
     if (avgEl) avgEl.textContent = T('avgNow', { v: computedAvg.toFixed(3) });
     // Default update mode, NOT 'active': 'active' is Chart.js's hover
-    // transition and resolves every point with its hover style (5 px red
-    // dots along the whole line) if a refresh lands while the cursor is on
-    // the chart - and that styling then sticks until the next data change.
+    // transition and resolves every point with its hover style if a refresh
+    // lands while the cursor is on the chart.
     mainChartInstance.update();
     return;
   }
@@ -3401,27 +3820,27 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
   mainChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [
         {
           label: T('dsLevel'),
-          data: values,
-          borderColor: '#1e4096',
-          borderWidth: 2.2,
+          data: pts(values),
+          borderColor: th.line,
+          borderWidth: 2,
           pointRadius: pointRadii,
           pointHoverRadius: pointHoverR,
           pointBackgroundColor: pointColours,
           pointBorderColor: pointColours,
-          pointHoverBackgroundColor: '#dc2626',
+          pointHoverBackgroundColor: th.line,
           fill: true,
-          spanGaps: false,   // break the line at null readings instead of interpolating
+          spanGaps,          // joins short holes, breaks across real outages
           backgroundColor: (ctx2) => {
             const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, ctx2.chart.height);
-            g.addColorStop(0, 'rgba(30,64,150,0.18)');
-            g.addColorStop(1, 'rgba(30,64,150,0.01)');
+            g.addColorStop(0, th.fillTop);
+            g.addColorStop(1, th.fillBot);
             return g;
           },
-          tension: 0.42,
+          tension: 0.3,
+          cubicInterpolationMode: 'monotone',   // no overshoot loops at steps
         },
         {
           label: T('dsAvg'),
@@ -3430,47 +3849,47 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
           borderWidth: 1.5,
           borderDash: [6, 4],
           pointRadius: 0,
+          pointHoverRadius: 0,
           fill: false,
           tension: 0,
         },
         {
           label: T('dsForecast'),
-          data: prediction || [],
-          borderColor: 'rgba(192,57,43,0.70)',
-          borderWidth: 1.6,
+          data: prediction ? pts(prediction) : [],
+          borderColor: 'rgba(192,57,43,0.60)',
+          borderWidth: 1.4,
           borderDash: [3, 3],
           pointRadius: 0,
           fill: false,
-          spanGaps: false,
-          tension: 0.4,
+          spanGaps,
+          tension: 0.3,
+          cubicInterpolationMode: 'monotone',   // no overshoot loops at steps
         },
         {
           label: T('dsUs'),
-          data: usSeries,
+          data: pts(usSeries),
           hidden: !hasUs,
-          borderColor: 'rgba(107,116,143,0.80)',
+          borderColor: th.us,
           borderWidth: 1.4,
           borderDash: [2, 3],
           pointRadius: 0,
           fill: false,
-          spanGaps: false,
-          tension: 0.42,
+          spanGaps,
+          tension: 0.3,
+          cubicInterpolationMode: 'monotone',   // no overshoot loops at steps
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      parsing: false,
+      normalized: true,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
       plugins: {
-        decimation: {
-          enabled: true,
-          algorithm: 'lttb',
-          samples: 300,
-          threshold: 300,
-        },
+        decimation: { enabled: false },
         legend: { display: false },
-        annotation: { annotations: buildMainChartAnnotations(values, labels) },
+        annotation: { annotations },
         tooltip: {
           backgroundColor: '#0d2149',
           titleColor: '#c9a227',
@@ -3478,10 +3897,16 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
           borderColor: 'rgba(201,162,39,0.3)',
           borderWidth: 1,
           padding: 10,
+          filter: (item) => item.datasetIndex !== 1,   // the flat mean line needs no row
           callbacks: {
-            // These callbacks are created ONCE (in-place updates never rebuild
-            // them), so they must read the module-level g_anomalyFlags, not a
-            // render-time local that would go stale after the first update.
+            // Created ONCE (in-place updates never rebuild them), so they read
+            // state stored on the chart / module, not render-time locals.
+            title: (items) => {
+              if (!items.length) return '';
+              const c = items[0].chart;
+              const ts = (c._tsStrings || [])[items[0].dataIndex];
+              return ts && ts.length >= 16 ? fmtTsLong(ts) : ((c._labels || [])[items[0].dataIndex] || '');
+            },
             label: (ctx3) => {
               if (ctx3.datasetIndex === 0) {
                 const flag = g_anomalyFlags[ctx3.dataIndex] ? T('ttAnom') : '';
@@ -3502,21 +3927,11 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
         },
       },
       scales: {
-        x: {
-          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-          ticks: {
-            color: '#6b748f',
-            font: { size: 10, family: CHART_FONT },
-            // Fewer time labels on a phone, or they run into each other.
-            maxTicksLimit: window.innerWidth < 600 ? 5 : 12,
-            autoSkipPadding: 12,
-            maxRotation: 0,
-          },
-        },
+        x: timeAxisX(xs, labels, th),
         y: {
-          grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+          grid: { color: th.grid, drawBorder: false },
           ticks: {
-            color: '#6b748f',
+            color: th.tick,
             font: { size: 10, family: CHART_FONT },
             callback: v => v.toFixed(2) + ' m',
           },
@@ -3526,6 +3941,8 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
   });
 
   mainChartInstance._tsStrings = timestamps || [];   // for drag-zoom
+  mainChartInstance._labels    = labels;
+  mainChartInstance._full      = full;
 
   // Update avg display after chart creation
   const avgEl = document.getElementById('chart-avg-display');
@@ -3533,6 +3950,23 @@ function renderMainChart(labels, values, mean, prediction, timestamps, usValues)
 
   // Attach drag-select brush after chart is ready
   attachDragSelect();
+}
+
+/** Legend toggle for the anomaly markers: label, count and on/off state. */
+function syncAnomalyLegend(count) {
+  const btn = document.getElementById('legend-anom-toggle');
+  if (!btn) return;
+  btn.hidden = !count;
+  btn.classList.toggle('off', !g_showAnomalies);
+  btn.setAttribute('aria-pressed', g_showAnomalies ? 'true' : 'false');
+  const n = document.getElementById('legend-anom-count');
+  if (n) n.textContent = count;
+}
+
+function toggleAnomalyMarkers() {
+  g_showAnomalies = !g_showAnomalies;
+  try { localStorage.setItem('kabstar_anom', g_showAnomalies ? '1' : '0'); } catch (e) {}
+  updateDashboard(activeStation);   // demo stations too, not just live data
 }
 
 function renderMiniChart(labels, values) {
@@ -3595,11 +4029,30 @@ function renderMiniChart(labels, values) {
 
 /* ═══════════════════════════════════════════════════
    ENV CHARTS — Temperature & Humidity
+   Same time axis as the main chart (timeAxisX), so the three line up and an
+   outage shows at its real width.
 ═══════════════════════════════════════════════════ */
-function _buildEnvChartConfig(ctx, data, labels, color, unit, threshold) {
-  const nums  = data.filter(v => v !== null && !isNaN(v));
-  const avg   = nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
-  const avgLine = data.map(() => avg !== null ? Math.round(avg * 10) / 10 : null);
+// {x, y} points + x positions for an env series: real time when every stamp
+// parses, else the point index (sim/legacy data).
+function envSeries(data, timestamps) {
+  let xs = (timestamps && timestamps.length === data.length) ? timestamps.map(mytMs) : null;
+  if (xs && xs.some(x => isNaN(x))) xs = null;
+  const X = i => xs ? xs[i] : i;
+  const nums = data.filter(v => v !== null && !isNaN(v));
+  const avg  = nums.length ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length * 10) / 10 : null;
+  return {
+    xs,
+    pts: data.map((y, i) => ({ x: X(i), y: (y === undefined ? null : y) })),
+    avg: (avg === null || !data.length) ? [] : [{ x: X(0), y: avg }, { x: X(data.length - 1), y: avg }],
+  };
+}
+
+// `style` (optional) overrides the temperature/humidity defaults that are
+// otherwise picked from `unit`: { label, gradTop, gradBottom }.
+function _buildEnvChartConfig(ctx, data, labels, timestamps, color, unit, threshold, style) {
+  const th = chartTheme();
+  const s  = envSeries(data, timestamps);
+  const dsLabel = (style && style.label) || (unit === '°C' ? T('ttTemp') : T('ttHumid'));
 
   const plugins = {
     decimation: { enabled: true, algorithm: 'lttb', samples: 200, threshold: 200 },
@@ -3611,11 +4064,15 @@ function _buildEnvChartConfig(ctx, data, labels, color, unit, threshold) {
       borderColor: 'rgba(201,162,39,0.3)',
       borderWidth: 1,
       padding: 10,
+      filter: (item) => item.datasetIndex === 0,
       callbacks: {
-        label: (c) => {
-          if (c.datasetIndex === 0) return `  ${unit === '°C' ? T('ttTemp') : T('ttHumid')}: ${c.parsed.y.toFixed(1)} ${unit}`;
-          return `  ${T('ttAvg')}: ${c.parsed.y.toFixed(1)} ${unit}`;
+        title: (items) => {
+          if (!items.length) return '';
+          const c  = items[0].chart;
+          const ts = (c._tsStrings || [])[items[0].dataIndex];
+          return ts && ts.length >= 16 ? fmtTsLong(ts) : ((c._labels || [])[items[0].dataIndex] || '');
         },
+        label: (c) => `  ${dsLabel}: ${c.parsed.y.toFixed(1)} ${unit}`,
       },
     },
   };
@@ -3647,38 +4104,40 @@ function _buildEnvChartConfig(ctx, data, labels, color, unit, threshold) {
 
   // Pre-compute RGBA stop colours so the gradient closure has no dependency on
   // the `color` hex string (which can't be transformed at paint time).
-  const gradTop    = unit === '°C' ? 'rgba(224,82,82,0.22)'   : 'rgba(39,163,201,0.22)';
-  const gradBottom = unit === '°C' ? 'rgba(224,82,82,0.01)'   : 'rgba(39,163,201,0.01)';
+  const gradTop    = (style && style.gradTop)    || (unit === '°C' ? 'rgba(224,82,82,0.22)' : 'rgba(39,163,201,0.22)');
+  const gradBottom = (style && style.gradBottom) || (unit === '°C' ? 'rgba(224,82,82,0.01)' : 'rgba(39,163,201,0.01)');
 
   return {
     type: 'line',
     data: {
-      labels,
       datasets: [
         {
-          label: unit === '°C' ? T('ttTemp') : T('ttHumid'),
-          data,
+          label: dsLabel,
+          data: s.pts,
           borderColor: color,
-          borderWidth: 2.2,
+          borderWidth: 2,
           pointRadius: 0,
-          pointHoverRadius: 5,
+          pointHoverRadius: 4,
           pointHoverBackgroundColor: color,
           fill: true,
+          spanGaps: s.xs ? gapSpanMs(s.xs) : false,
           backgroundColor: (ctx2) => {
             const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, ctx2.chart.height);
             g.addColorStop(0, gradTop);
             g.addColorStop(1, gradBottom);
             return g;
           },
-          tension: 0.42,
+          tension: 0.3,
+          cubicInterpolationMode: 'monotone',   // no overshoot loops at steps
         },
         {
           label: T('dsAvg'),
-          data: avgLine,
+          data: s.avg,
           borderColor: 'rgba(201,162,39,0.65)',
           borderWidth: 1.5,
           borderDash: [6, 4],
           pointRadius: 0,
+          pointHoverRadius: 0,
           fill: false,
           tension: 0,
         },
@@ -3687,17 +4146,16 @@ function _buildEnvChartConfig(ctx, data, labels, color, unit, threshold) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      parsing: false,
+      normalized: true,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
       plugins,
       scales: {
-        x: {
-          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-          ticks: { color: '#6b748f', font: { size: 10, family: CHART_FONT }, maxTicksLimit: 6, autoSkip: true, autoSkipPadding: 12, maxRotation: 30 },
-        },
+        x: timeAxisX(s.xs, labels, th),
         y: {
-          grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+          grid: { color: th.grid, drawBorder: false },
           ticks: {
-            color: '#6b748f',
+            color: th.tick,
             font: { size: 10, family: CHART_FONT },
             callback: v => v.toFixed(1) + ' ' + unit,
           },
@@ -3707,7 +4165,24 @@ function _buildEnvChartConfig(ctx, data, labels, color, unit, threshold) {
   };
 }
 
-function renderTempChart(labels, tempData) {
+// Create or update one env chart in place. Returns the (possibly new) instance.
+function _renderEnvChart(inst, canvasEl, labels, data, timestamps, color, unit, threshold, style) {
+  const config = _buildEnvChartConfig(canvasEl.getContext('2d'), data, labels, timestamps, color, unit, threshold, style);
+  if (inst) {
+    inst.data.datasets[0].data     = config.data.datasets[0].data;
+    inst.data.datasets[0].spanGaps = config.data.datasets[0].spanGaps;
+    inst.data.datasets[1].data     = config.data.datasets[1].data;
+    inst.options.scales.x          = config.options.scales.x;
+    inst.update();   // see renderMainChart: never 'active'
+  } else {
+    inst = new Chart(canvasEl.getContext('2d'), config);
+  }
+  inst._tsStrings = timestamps || [];
+  inst._labels    = labels;
+  return inst;
+}
+
+function renderTempChart(labels, tempData, timestamps) {
   const canvasEl  = document.getElementById('tempChart');
   const noDataEl  = document.getElementById('temp-no-data');
   const statEl    = document.getElementById('temp-chart-stat');
@@ -3724,20 +4199,10 @@ function renderTempChart(labels, tempData) {
   const avg    = nums.reduce((a, b) => a + b, 0) / nums.length;
   if (statEl) statEl.textContent = T('envStat', { latest: latest.toFixed(1) + '°C', avg: avg.toFixed(1) + '°C' });
 
-  const ctx    = canvasEl.getContext('2d');
-  const config = _buildEnvChartConfig(ctx, tempData, labels, '#e05252', '°C', 35);
-
-  if (tempChartInstance) {
-    tempChartInstance.data.labels             = labels;
-    tempChartInstance.data.datasets[0].data  = tempData;
-    tempChartInstance.data.datasets[1].data  = config.data.datasets[1].data;
-    tempChartInstance.update();   // see renderMainChart: never 'active'
-    return;
-  }
-  tempChartInstance = new Chart(ctx, config);
+  tempChartInstance = _renderEnvChart(tempChartInstance, canvasEl, labels, tempData, timestamps, '#e05252', '°C', 35);
 }
 
-function renderHumidChart(labels, humidData) {
+function renderHumidChart(labels, humidData, timestamps) {
   const canvasEl = document.getElementById('humidChart');
   const noDataEl = document.getElementById('humid-no-data');
   const statEl   = document.getElementById('humid-chart-stat');
@@ -3754,17 +4219,79 @@ function renderHumidChart(labels, humidData) {
   const avg    = nums.reduce((a, b) => a + b, 0) / nums.length;
   if (statEl) statEl.textContent = T('envStat', { latest: latest.toFixed(1) + '%', avg: avg.toFixed(1) + '%' });
 
-  const ctx    = canvasEl.getContext('2d');
-  const config = _buildEnvChartConfig(ctx, humidData, labels, '#27a3c9', '%', null);
+  humidChartInstance = _renderEnvChart(humidChartInstance, canvasEl, labels, humidData, timestamps, '#27a3c9', '%', null);
+}
 
-  if (humidChartInstance) {
-    humidChartInstance.data.labels            = labels;
-    humidChartInstance.data.datasets[0].data = humidData;
-    humidChartInstance.data.datasets[1].data = config.data.datasets[1].data;
-    humidChartInstance.update();   // see renderMainChart: never 'active'
+/**
+ * Each distance sensor's range to the water (cm), per reading of a chart
+ * series. The read API has no per-sensor distance, so it is worked back from
+ * the levels the cloud computed: distance = datum_cm − level × 100.
+ *   radar      — the primary level, but only on rows the radar fed (sn
+ *                'LD2413'); when its burst was empty the ultrasonic stood in.
+ *                The bucket-mean series carries no `sn`, so there it is the
+ *                primary sensor's mean (stand-in rows included).
+ *   ultrasonic — from `usl`, which already includes Config us_offset_cm.
+ * Returns nulls throughout when the datum is unknown.
+ */
+function sensorDistances(cs, isLong) {
+  const datum = g_stationMeta ? g_stationMeta.datum_cm : null;
+  const n = (cs.values || []).length;
+  if (datum === null || datum === undefined || isNaN(datum)) {
+    return { radar: new Array(n).fill(null), us: new Array(n).fill(null) };
+  }
+  const toDist = (lvl) => (lvl === null || lvl === undefined || isNaN(lvl))
+    ? null : Math.round((datum - lvl * 100) * 100) / 100;
+  const sn = cs.sensorNames || [];
+  const us = cs.usValues || [];
+  return {
+    radar: cs.values.map((v, i) => (isLong || sn[i] === 'LD2413') ? toDist(v) : null),
+    us:    cs.values.map((v, i) => toDist(us[i] === undefined ? null : us[i])),
+  };
+}
+
+// One distance chart (radar or ultrasonic): placeholder when the window holds
+// no reading from that sensor, else latest/mean in the subtitle + the chart.
+function renderSensorDistChart(which, labels, data, timestamps, aggS) {
+  const isRadar  = which === 'radar';
+  const canvasEl = document.getElementById(isRadar ? 'radarChart' : 'usChart');
+  const noDataEl = document.getElementById(isRadar ? 'radar-no-data' : 'us-no-data');
+  const statEl   = document.getElementById(isRadar ? 'radar-chart-stat' : 'us-chart-stat');
+  const nums     = (data || []).filter(v => v !== null && !isNaN(v));
+  const inst     = isRadar ? radarChartInstance : usChartInstance;
+  const setInst  = (c) => { if (isRadar) radarChartInstance = c; else usChartInstance = c; };
+
+  if (noDataEl) noDataEl.style.display = nums.length ? 'none' : 'flex';
+  if (!nums.length) {
+    if (inst) { inst.destroy(); setInst(null); }
+    if (statEl) statEl.textContent = '—';
     return;
   }
-  humidChartInstance = new Chart(ctx, config);
+
+  const latest = nums[nums.length - 1];
+  const avg    = nums.reduce((a, b) => a + b, 0) / nums.length;
+  let stat = T('envStat', { latest: latest.toFixed(1) + ' cm', avg: avg.toFixed(1) + ' cm' });
+  if (aggS) stat += ' · ' + T('aggMeans', { m: Math.round(aggS / 60) }) + (isRadar ? ' ' + T('distPrimaryNote') : '');
+  if (statEl) statEl.textContent = stat;
+
+  const th = chartTheme();
+  const style = isRadar
+    ? { label: T('ttRadar'), gradTop: th.fillTop,   gradBottom: th.fillBot }
+    : { label: T('ttUs'),    gradTop: th.usFillTop, gradBottom: th.usFillBot };
+  setInst(_renderEnvChart(inst, canvasEl, labels, data, timestamps,
+                          isRadar ? th.line : th.usSolid, 'cm', null, style));
+}
+
+// Both distance charts, shown for the real (IoT) station only.
+function renderSensorDistCharts(show, labels, dist, timestamps, aggS) {
+  const grid = document.getElementById('sensor-chart-grid');
+  if (grid) grid.hidden = !show;
+  if (!show) {
+    if (radarChartInstance) { radarChartInstance.destroy(); radarChartInstance = null; }
+    if (usChartInstance)    { usChartInstance.destroy();    usChartInstance    = null; }
+    return;
+  }
+  renderSensorDistChart('radar', labels, dist.radar, timestamps, aggS);
+  renderSensorDistChart('us',    labels, dist.us,    timestamps, aggS);
 }
 
 
@@ -3939,6 +4466,10 @@ function renderTideEvents(values, timestamps, labels) {
   if (!el) return;
   const events = findTideEvents(values, timestamps, labels);
   el.innerHTML = '';
+  // No turning point in the window: drop the whole section rather than show
+  // an empty heading (the card then sizes to the trend chart alone).
+  const block = document.getElementById('tide-events-block');
+  if (block) block.hidden = !events.length;
   if (!events.length) {
     const empty = document.createElement('div');
     empty.style.color = 'var(--text-muted)';
@@ -3975,7 +4506,7 @@ function renderTideEvents(values, timestamps, labels) {
 ═══════════════════════════════════════════════════ */
 
 // Thresholds (ms)
-const CONN_STALE_MS   = 15 * 60 * 1000;   // 15 min → warning (1.5× 10-min cadence)
+const CONN_STALE_MS   = 15 * 60 * 1000;   // 15 min → warning (~15 missed 60 s readings)
 const CONN_OFFLINE_MS = 60 * 60 * 1000;   // 60 min → offline
 
 /**
@@ -4181,17 +4712,24 @@ function updateConnectivityPanel(readings) {
       const movedN = recent.filter(r => Number(r.moved) === 1).length;
       const skews = recent.map(r => r.skew).filter(v => v !== null && v !== undefined && !isNaN(v));
       const maxSkew = skews.length ? Math.max(...skews) : null;
+      // Readings the tide reduction would drop: burst SD or node/gateway clock
+      // skew over the Config limits (survey_max_sd_cm / max_clock_skew_s).
+      const sdLim = g_stationMeta.max_sd_cm, skewLim = g_stationMeta.max_skew_s;
+      const failN = recent.filter(r =>
+        (sdLim > 0   && r.sd   !== null && r.sd   !== undefined && Number(r.sd)   > sdLim) ||
+        (skewLim > 0 && r.skew !== null && r.skew !== undefined && Number(r.skew) > skewLim)).length;
 
       const parts = [];
       if (rvPct !== null) parts.push(`RTC ${rvPct}%`);
-      parts.push(gapCount === 0 ? 'tiada gap' : `${gapCount} gap`);
+      parts.push(gapCount === 0 ? T('qcNoGap') : T('qcGaps', { n: gapCount }));
       if (maxSd !== null) parts.push(`SD≤${maxSd.toFixed(1)}cm`);
-      if (maxSkew !== null) parts.push(`jam Δ≤${maxSkew}s`);
-      if (movedN > 0) parts.push(`⚠ ALIH×${movedN}`);   // mount moved — critical
+      if (maxSkew !== null) parts.push(T('qcClock', { s: maxSkew }));
+      if (failN > 0) parts.push(T('qcFailed', { n: failN }));
+      if (movedN > 0) parts.push(T('qcMoved', { n: movedN }));   // mount moved — critical
       qcEl.textContent = parts.join(' · ');
       // Any mount-movement is disqualifying for a reference gauge.
       qcEl.className   = 'conn-stat-value ' +
-        ((movedN === 0 && (rvPct === null || rvPct >= 95) && gapCount === 0) ? 'fresh' : 'stale');
+        ((movedN === 0 && failN === 0 && (rvPct === null || rvPct >= 95) && gapCount === 0) ? 'fresh' : 'stale');
     } else {
       qcEl.textContent = '—';
       qcEl.className   = 'conn-stat-value none';
@@ -4447,7 +4985,7 @@ function updateDashboard(idx) {
     // Re-apply avg text since the span was recreated
     const avgEl = document.getElementById('chart-avg-display');
     if (avgEl && mainChartInstance) {
-      const vals = mainChartInstance.data.datasets[0].data.filter(v => v !== null && !isNaN(v));
+      const vals = mainChartInstance.data.datasets[0].data.map(p => p.y).filter(v => v !== null && !isNaN(v));
       if (vals.length) avgEl.textContent = T('avgOnly', { v: (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(3) });
     }
   }
@@ -4462,8 +5000,18 @@ function updateDashboard(idx) {
   const filtTemp   = alignToFilter(rawTempVals,  csLabels, rawTs, capPts);
   const filtHumid  = alignToFilter(rawHumidVals, csLabels, rawTs, capPts);
 
-  renderTempChart(filtLabels, filtTemp.length ? filtTemp : rawTempVals);
-  renderHumidChart(filtLabels, filtHumid.length ? filtHumid : rawHumidVals);
+  renderTempChart(filtLabels,  filtTemp.length  ? filtTemp  : rawTempVals,  filtTemp.length  ? filtTimestamps : null);
+  renderHumidChart(filtLabels, filtHumid.length ? filtHumid : rawHumidVals, filtHumid.length ? filtTimestamps : null);
+
+  // ── Per-sensor distance charts (below the map), same window ───────────────
+  const dist = sensorDistances(cs, csIsLong);
+  const filtRadar = alignToFilter(dist.radar, csLabels, rawTs, capPts);
+  const filtUs    = alignToFilter(dist.us,    csLabels, rawTs, capPts);
+  renderSensorDistCharts(idx === 0 && s.isIoT, filtLabels,
+                         { radar: filtRadar.length ? filtRadar : dist.radar,
+                           us:    filtUs.length    ? filtUs    : dist.us },
+                         filtRadar.length ? filtTimestamps : null,
+                         csIsLong ? cs.aggS : 0);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -4735,6 +5283,8 @@ function switchToStation(idx) {
   if (miniChartInstance)  { miniChartInstance.destroy();  miniChartInstance  = null; }
   if (tempChartInstance)  { tempChartInstance.destroy();  tempChartInstance  = null; }
   if (humidChartInstance) { humidChartInstance.destroy(); humidChartInstance = null; }
+  if (radarChartInstance) { radarChartInstance.destroy(); radarChartInstance = null; }
+  if (usChartInstance)    { usChartInstance.destroy();    usChartInstance    = null; }
   // Reset to the default window, anchored to THIS station's newest reading
   calClose();
   applyPreset(DEFAULT_PRESET, { silent: true });
@@ -4847,6 +5397,7 @@ function applyCustomRange(from, to, opts) {
 /** Push chartFilter into every control + the URL. */
 function syncWindowUI() {
   document.querySelectorAll('.zoom-preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === chartFilter.preset));
+  syncZoomMore();
   const slider = document.getElementById('pts-slider'), input = document.getElementById('pts-input');
   if (slider) slider.value = chartFilter.maxPts;
   if (input)  input.value  = chartFilter.maxPts;
@@ -5133,11 +5684,15 @@ function applyDragZoom(i0, i1) {
   if (endIdx - startIdx < 1) return;   // too small, ignore
 
   // Get the currently rendered labels (post-filter) from the chart
-  const chartLabels = mainChartInstance.data.labels;
-  const chartData   = mainChartInstance.data.datasets[0].data;
+  const chartLabels = mainChartInstance._labels || [];
+  const chartData   = mainChartInstance.data.datasets[0].data.map(p => p.y);
 
   const selLabels = chartLabels.slice(startIdx, endIdx + 1);
-  const selValues = chartData.slice(startIdx, endIdx + 1);
+  // Stats from the full-resolution series when the chart is thinned.
+  const full = mainChartInstance._full;
+  const selValues = (full && full.idx)
+    ? full.values.slice(full.idx[startIdx], full.idx[endIdx] + 1)
+    : chartData.slice(startIdx, endIdx + 1);
 
   if (!selLabels.length) return;
 
@@ -5330,40 +5885,84 @@ function getSysStatusClass(status) {
   return 'st-offline';
 }
 
+// Demo-station group open/closed (remembered). Opens on its own whenever a demo
+// station is the one being viewed.
+let g_demoOpen = false;
+try { g_demoOpen = localStorage.getItem('kabstar_demo_open') === '1'; } catch (e) {}
+
+function stationItemEl(s, i) {
+  const item = document.createElement('div');
+  item.className = 'station-item' + (i === activeStation ? ' active' : '') + (s.isIoT ? ' is-real' : '');
+  item.dataset.idx = i;
+  item.setAttribute('role', 'button');
+  item.setAttribute('tabindex', '0');
+  item.setAttribute('aria-label', `${stationDisplayName(s)} — ${stationTypeLabel(s)}`);
+  if (i === activeStation) item.setAttribute('aria-current', 'true');
+  let typeLabel = stationTypeLabel(s);
+  if (s.isIoT && s._lastSeenMs) {
+    typeLabel += ' · ' + fmtAge(Date.now() - s._lastSeenMs, true);
+  } else if (s.isIoT && s.sysStatus === 'offline') {
+    typeLabel += ' · ' + T('noLink');
+  }
+  // A (simulated) error code rides on the type line, so the name keeps its width.
+  const err = (s.sysStatus === 'warning' && s.errorCode)
+    ? ` · <span class="station-err-inline" title="${s.isIoT ? '' : T('simCodeTitle')}">${s.errorCode}</span>` : '';
+  item.innerHTML = `
+    <div class="station-num">${i + 1}</div>
+    <div class="station-info">
+      <div class="station-name">${stationDisplayName(s)}</div>
+      <div class="station-type">${typeLabel}${err}</div>
+    </div>
+    <div class="station-dot ${getSysStatusClass(s.sysStatus)}"></div>
+  `;
+  item.addEventListener('click', () => switchToStation(i));
+  item.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchToStation(i); }
+  });
+  return item;
+}
+
+/**
+ * Sidebar station list: the real (IoT) station(s) pinned at the top, the
+ * simulated demo stations in a collapsible group below.
+ */
 function buildSidebar() {
   const list = document.getElementById('station-list');
   list.innerHTML = '';
-  STATIONS.forEach((s, i) => {
-    const item = document.createElement('div');
-    item.className = 'station-item' + (i === activeStation ? ' active' : '');
-    item.dataset.idx = i;
-    item.setAttribute('role', 'button');
-    item.setAttribute('tabindex', '0');
-    item.setAttribute('aria-label', `${stationDisplayName(s)} — ${stationTypeLabel(s)}`);
-    if (i === activeStation) item.setAttribute('aria-current', 'true');
-    const errBadge = (s.sysStatus === 'warning' && s.errorCode)
-      ? `<span class="station-err${s.isIoT ? '' : ' sim'}" title="${s.isIoT ? '' : T('simCodeTitle')}">${s.isIoT ? '' : 'SIM · '}${s.errorCode}</span>` : '';
-    let typeLabel = stationTypeLabel(s);
-    if (i === 0 && s.isIoT && s._lastSeenMs) {
-      typeLabel += ' · ' + fmtAge(Date.now() - s._lastSeenMs, true);
-    } else if (i === 0 && s.isIoT && s.sysStatus === 'offline') {
-      typeLabel += ' · ' + T('noLink');
-    }
-    item.innerHTML = `
-      <div class="station-num">${i + 1}</div>
-      <div class="station-info">
-        <div class="station-name">${stationDisplayName(s)}</div>
-        <div class="station-type">${typeLabel}</div>
-      </div>
-      ${errBadge}
-      <div class="station-dot ${getSysStatusClass(s.sysStatus)}"></div>
-    `;
-    item.addEventListener('click', () => switchToStation(i));
-    item.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchToStation(i); }
+  const real = [], demo = [];
+  STATIONS.forEach((s, i) => (s.isIoT ? real : demo).push(i));
+
+  const label = (text) => {
+    const el = document.createElement('div');
+    el.className = 'sidebar-section-label';
+    el.textContent = text;
+    return el;
+  };
+
+  if (real.length) {
+    list.appendChild(label(T('stationsReal')));
+    real.forEach(i => list.appendChild(stationItemEl(STATIONS[i], i)));
+  }
+  if (demo.length) {
+    const open = g_demoOpen || demo.includes(activeStation);
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.className = 'sidebar-group-toggle' + (open ? ' open' : '');
+    head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    head.innerHTML = `<span class="chev">&#9656;</span> ${T('stationsDemo', { n: demo.length })}`;
+    head.addEventListener('click', () => {
+      g_demoOpen = !open;
+      try { localStorage.setItem('kabstar_demo_open', g_demoOpen ? '1' : '0'); } catch (e) {}
+      buildSidebar();
     });
-    list.appendChild(item);
-  });
+    list.appendChild(head);
+    if (open) {
+      const group = document.createElement('div');
+      group.className = 'sidebar-demo-group';
+      demo.forEach(i => group.appendChild(stationItemEl(STATIONS[i], i)));
+      list.appendChild(group);
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -5379,6 +5978,12 @@ function applyTheme(theme) {
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   applyTheme(cur === 'dark' ? 'light' : 'dark');
+  // Chart colours are fixed at creation (chartTheme) — rebuild them.
+  [mainChartInstance, tempChartInstance, humidChartInstance, miniChartInstance, radarChartInstance, usChartInstance]
+    .forEach(c => { if (c) c.destroy(); });
+  mainChartInstance = tempChartInstance = humidChartInstance = miniChartInstance = null;
+  radarChartInstance = usChartInstance = null;
+  if (allData) updateDashboard(activeStation);
 }
 
 // Bilingual chrome. Extend by adding entries + tagging more elements.
@@ -5407,7 +6012,8 @@ const I18N = {
     mapPick: 'Pilih Stesen — Klik Ikon untuk Butiran', close: 'Tutup',
     mapLatest: 'Paras Terkini', mapStatus: 'Status', mapCoords: 'Koordinat', mapType: 'Jenis', mapCode: 'Kod Ralat', mapView: 'Lihat Data Stesen',
     // sidebar
-    stationList: 'Senarai Stesen Tidal', sidebarTagline: 'Sistem Air Pasang Surut Mudah Alih',
+    stationsReal: 'Stesen Sebenar', stationsDemo: 'Stesen Demo ({n})', sidebarTagline: 'Sistem Air Pasang Surut Mudah Alih',
+    more: 'Lagi', connMore: 'Butiran lanjut', connLess: 'Kurangkan butiran', legendAnom: 'Anomali', anomToggleTitle: 'Tunjuk atau sembunyi penanda anomali pada graf',
     stActive: 'Aktif', stWarning: 'Amaran', stOffline: 'Luar Talian', stLoading: 'Memuatkan…',
     typeIoT: 'IoT (Masa Nyata)', typeSim: 'Simulasi', noLink: 'Tiada Sambungan', simCodeTitle: 'Kod ralat simulasi (demo)',
     stationWord: 'Stesen',
@@ -5430,6 +6036,7 @@ const I18N = {
     connFreshLabel: 'Kesegaran Data (0 = baru, 15 min = had amaran)',
     connConnected: 'Disambungkan', connSlow: 'Amaran — Lambat', connOffline: 'Luar Talian', connNoData: 'Tiada data',
     readingsUnit: 'bacaan', freshFresh: 'Segar', freshSlow: 'Lambat', freshStale: 'Lapuk',
+    qcNoGap: 'tiada gap', qcGaps: '{n} gap', qcClock: 'jam Δ≤{s}s', qcMoved: '⚠ ALIH×{n}', qcFailed: '{n} gagal QC',
     ageS: '{n} s lalu', ageMin: '{n} min lalu', ageHr: '{h} jam lalu', ageHrMin: '{h} jam {m} min lalu', ageDay: '{n} hari lalu',
     // station header + tiles
     breadcrumb: 'Papan Pemuka', coords: 'Koordinat', datumGauge: 'Datum: Tolok',
@@ -5457,6 +6064,14 @@ const I18N = {
     tempNoData: 'Tiada data suhu tersedia', humidChart: 'Graf Kelembapan', humidChartSub: 'Kelembapan relatif (%) berbanding masa',
     legendHumid: 'Kelembapan (%)', humidNoData: 'Tiada data kelembapan tersedia',
     envStat: 'Terkini: {latest} · Purata: {avg}', ttTemp: 'Suhu', ttHumid: 'Kelembapan',
+    radarChart: 'Jarak Radar', radarChartSub: 'Jarak radar ke permukaan air (cm) berbanding masa',
+    usChart: 'Jarak Ultrasonik', usChartSub: 'Jarak ultrasonik ke permukaan air (cm) berbanding masa',
+    legendRadar: 'Radar (cm)', legendUs: 'Ultrasonik (cm)', ttRadar: 'Radar',
+    radarNoData: 'Tiada data radar dalam tetingkap ini', usNoData: 'Tiada data ultrasonik dalam tetingkap ini',
+    radarChartAria: 'Carta jarak radar (cm) mengikut masa', usChartAria: 'Carta jarak ultrasonik (cm) mengikut masa',
+    distDerivTitle: 'Dikira daripada awan: datum − paras air (hanya baris yang dibaca oleh radar)',
+    distDerivUsTitle: 'Dikira daripada awan: datum − paras ultrasonik (termasuk anjakan Config us_offset_cm)',
+    distPrimaryNote: '(sensor utama)',
     // info panel
     tabStation: 'Maklumat Stesen', tabSystem: 'Maklumat Sistem', infoId: 'ID Stesen', infoLat: 'Latitud', infoLng: 'Longitud',
     infoType: 'Jenis Sensor', infoMax: 'Paras Tertinggi (24j)', infoMin: 'Paras Terendah (24j)', infoAmp: 'Amplitud',
@@ -5492,7 +6107,8 @@ const I18N = {
     calClear: 'Clear', calDone: 'Done',
     mapPick: 'Select a Station — click an icon for details', close: 'Close',
     mapLatest: 'Latest Level', mapStatus: 'Status', mapCoords: 'Coordinates', mapType: 'Type', mapCode: 'Error Code', mapView: 'View Station Data',
-    stationList: 'Tide Station List', sidebarTagline: 'Portable Tide Monitoring System',
+    stationsReal: 'Live Station', stationsDemo: 'Demo Stations ({n})', sidebarTagline: 'Portable Tide Monitoring System',
+    more: 'More', connMore: 'More details', connLess: 'Fewer details', legendAnom: 'Anomalies', anomToggleTitle: 'Show or hide the anomaly markers on the chart',
     stActive: 'Active', stWarning: 'Warning', stOffline: 'Offline', stLoading: 'Loading…',
     typeIoT: 'IoT (Real-Time)', typeSim: 'Simulated', noLink: 'No Connection', simCodeTitle: 'Simulated error code (demo)',
     stationWord: 'Station',
@@ -5513,6 +6129,7 @@ const I18N = {
     connFreshLabel: 'Data Freshness (0 = fresh, 15 min = warning threshold)',
     connConnected: 'Connected', connSlow: 'Warning — Slow', connOffline: 'Offline', connNoData: 'No data',
     readingsUnit: 'readings', freshFresh: 'Fresh', freshSlow: 'Slow', freshStale: 'Stale',
+    qcNoGap: 'no gaps', qcGaps: '{n} gap(s)', qcClock: 'clock Δ≤{s}s', qcMoved: '⚠ MOVED×{n}', qcFailed: '{n} fail QC',
     ageS: '{n} s ago', ageMin: '{n} min ago', ageHr: '{h} h ago', ageHrMin: '{h} h {m} min ago', ageDay: '{n} days ago',
     breadcrumb: 'Dashboard', coords: 'Coordinates', datumGauge: 'Datum: Gauge zero',
     tLevel: 'Current Water Level', tLevelLoading: 'Fetching data…', tStatus: 'Tide Status', tRate: 'Rate of Change',
@@ -5538,6 +6155,14 @@ const I18N = {
     tempNoData: 'No temperature data available', humidChart: 'Humidity Chart', humidChartSub: 'Relative humidity (%) vs time',
     legendHumid: 'Humidity (%)', humidNoData: 'No humidity data available',
     envStat: 'Latest: {latest} · Mean: {avg}', ttTemp: 'Temperature', ttHumid: 'Humidity',
+    radarChart: 'Radar Distance', radarChartSub: 'Radar distance to the water surface (cm) vs time',
+    usChart: 'Ultrasonic Distance', usChartSub: 'Ultrasonic distance to the water surface (cm) vs time',
+    legendRadar: 'Radar (cm)', legendUs: 'Ultrasonic (cm)', ttRadar: 'Radar',
+    radarNoData: 'No radar data in this window', usNoData: 'No ultrasonic data in this window',
+    radarChartAria: 'Radar distance (cm) over time', usChartAria: 'Ultrasonic distance (cm) over time',
+    distDerivTitle: 'Worked out from the cloud data: datum − water level (rows the radar measured only)',
+    distDerivUsTitle: 'Worked out from the cloud data: datum − ultrasonic level (includes the Config us_offset_cm shift)',
+    distPrimaryNote: '(primary sensor)',
     tabStation: 'Station Info', tabSystem: 'System Info', infoId: 'Station ID', infoLat: 'Latitude', infoLng: 'Longitude',
     infoType: 'Sensor Type', infoMax: 'Highest Level (24h)', infoMin: 'Lowest Level (24h)', infoAmp: 'Amplitude',
     trend6h: 'Last 6 Hours Trend', tideEventsTitle: 'Recent High & Low Water',
@@ -5577,9 +6202,12 @@ function applyLang(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (d[k] !== undefined) el.textContent = d[k]; });
   document.querySelectorAll('[data-i18n-html]').forEach(el => { const k = el.dataset.i18nHtml; if (d[k] !== undefined) el.innerHTML = d[k]; });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { const k = el.dataset.i18nTitle; if (d[k] !== undefined) el.title = d[k]; });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => { const k = el.dataset.i18nAria; if (d[k] !== undefined) el.setAttribute('aria-label', d[k]); });
   document.title = d.pageTitle;
   if (typeof calUpdateLabel === 'function') { calUpdateLabel(); if (CAL.open) calRender(); }
   if (g_lastSpan) updateWindowSpan(g_lastSpan.ts, g_lastSpan.n);
+  syncZoomMore();
+  syncConnMore();
   // Everything rendered from JS (tiles, chart legends/tooltips, sidebar, link
   // panel) is rebuilt in the new language. Charts are recreated because their
   // dataset labels are fixed at construction.
@@ -5588,6 +6216,8 @@ function applyLang(lang) {
     try { if (miniChartInstance)  { miniChartInstance.destroy();  miniChartInstance  = null; } } catch (e) {}
     try { if (tempChartInstance)  { tempChartInstance.destroy();  tempChartInstance  = null; } } catch (e) {}
     try { if (humidChartInstance) { humidChartInstance.destroy(); humidChartInstance = null; } } catch (e) {}
+    try { if (radarChartInstance) { radarChartInstance.destroy(); radarChartInstance = null; } } catch (e) {}
+    try { if (usChartInstance)    { usChartInstance.destroy();    usChartInstance    = null; } } catch (e) {}
     if (g_lastConnReadings) updateConnectivityPanel(g_lastConnReadings);
     buildSidebar();
     updateDashboard(activeStation);
@@ -5717,6 +6347,18 @@ async function loadData() {
   allData = base;
 }
 
+/** Replace the quick first read with the full DASHBOARD_READ_LIMIT window. */
+async function loadFullHistory() {
+  const usingApi = GAS_API_URL && GAS_API_URL !== "YOUR_WEB_APP_URL_HERE";
+  if (!usingApi || g_readN === DASHBOARD_READ_LIMIT) return;
+  g_readN  = DASHBOARD_READ_LIMIT;
+  g_rawApi = null;   // next fetch is a full read, not an incremental merge
+  g_cursor = null;
+  await loadData();
+  if (CAL.open) { calendarSetData(calendarTimestamps()); calRender(); }
+  updateDashboard(activeStation);
+}
+
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
@@ -5740,6 +6382,7 @@ async function init() {
 
   buildSidebar();
   updateDashboard(activeStation);
+  loadFullHistory();   // the rest of the read window, after the first paint
 
   // Single refresh loop below (scheduleRefresh). A second 5-minute
   // setInterval used to run alongside it, double-polling the GAS endpoint
@@ -5922,6 +6565,63 @@ document.querySelectorAll('.zoom-preset-btn').forEach(btn => {
     applyPreset(this.dataset.preset);
   });
 });
+
+// ── "More" presets menu ──────────────────────────────────────────────────────
+// The four common windows sit in the segmented control; the rest live in this
+// menu. Its button shows the chosen one when that is active.
+function syncZoomMore() {
+  const lbl = document.getElementById('zoom-more-label');
+  const btn = document.getElementById('zoom-more-btn');
+  if (!lbl || !btn) return;
+  const chosen = document.querySelector('#zoom-more-menu .zoom-preset-btn.active');
+  lbl.textContent = chosen ? chosen.textContent : T('more');
+  btn.classList.toggle('active', !!chosen);
+}
+function setZoomMenu(open) {
+  const wrap = document.getElementById('zoom-more');
+  const btn  = document.getElementById('zoom-more-btn');
+  if (!wrap || !btn) return;
+  wrap.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+(function wireZoomMore() {
+  const btn = document.getElementById('zoom-more-btn');
+  if (!btn) return;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setZoomMenu(!document.getElementById('zoom-more').classList.contains('open'));
+  });
+  document.querySelectorAll('#zoom-more-menu .zoom-preset-btn').forEach(b =>
+    b.addEventListener('click', () => setZoomMenu(false)));
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#zoom-more')) setZoomMenu(false);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setZoomMenu(false); });
+})();
+
+// ── Connection panel: secondary figures fold away on phones ──────────────────
+function syncConnMore() {
+  const panel = document.getElementById('conn-panel');
+  const btn   = document.getElementById('conn-more-btn');
+  if (!panel || !btn) return;
+  const open = panel.classList.contains('expanded');
+  btn.textContent = open ? T('connLess') : T('connMore');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+(function wireConnMore() {
+  const btn = document.getElementById('conn-more-btn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    document.getElementById('conn-panel').classList.toggle('expanded');
+    syncConnMore();
+  });
+})();
+
+// ── Anomaly markers on/off (chart legend) ────────────────────────────────────
+(function wireAnomToggle() {
+  const btn = document.getElementById('legend-anom-toggle');
+  if (btn) btn.addEventListener('click', toggleAnomalyMarkers);
+})();
 
 // ── "Terkini": re-anchor to the newest reading ───────────────────────────────
 const zoomLiveBtn = document.getElementById('zoom-live-btn');
