@@ -10,7 +10,7 @@
  *   • Only successful (res.ok) responses are ever cached — a 500 page or a
  *     captive-portal login must not become the stored app shell.
  */
-const CACHE = 'kabstar-v7';   // v7: split into css/ and js/ modules   // v6: Inter web font
+const CACHE = 'kabstar-v8';   // v8: page revalidated on every visit   // v7: split into css/ and js/ modules   // v6: Inter web font
 
 // Local files the offline experience genuinely needs. addAll() is atomic and
 // its failure REJECTS the install, so a bad install can never wipe the
@@ -114,10 +114,16 @@ self.addEventListener('fetch', (e) => {
       url.origin === self.location.origin) {
     // cache:'no-cache' = always revalidate with the server (If-Modified-Since →
     // 304 when unchanged). Without it a plain fetch() can be satisfied from the
-    // browser's heuristic HTTP cache and hand back a stale app.js for days.
-    const netReq = (req.mode === 'navigate') ? req : new Request(req, { cache: 'no-cache' });
+    // browser's HTTP cache (GitHub Pages allows 10 minutes) and hand back an old
+    // index.html next to new scripts, so new elements on the page go missing.
+    // The page itself is re-requested by URL because a navigation request can't
+    // be copied with a new cache mode; if that hits a redirect, use the original.
+    const netFetch = (req.mode === 'navigate')
+      ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
+          .then((res) => (res.redirected ? fetch(req) : res))
+      : fetch(new Request(req, { cache: 'no-cache' }));
     e.respondWith(
-      fetch(netReq).then((res) => {
+      netFetch.then((res) => {
         if (res.ok) {   // don't let an error page replace the offline shell
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy));

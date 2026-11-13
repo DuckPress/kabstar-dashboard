@@ -131,4 +131,29 @@ export function setupPage() {
   document.querySelectorAll('.info-tab[data-tab]').forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
   });
+
+  // Back-to-top button: visible once the metric cards start disappearing under
+  // the top bar (for example after a card jump), and scrolls the page back up.
+  const topBtn = document.getElementById('back-to-top');
+  if (topBtn) {
+    const grid = document.querySelector('.metric-grid');
+    const topbar = document.getElementById('topbar');
+    const syncTopBtn = () => {
+      const barBottom = topbar ? topbar.getBoundingClientRect().bottom : 0;
+      const past = grid ? grid.getBoundingClientRect().top < barBottom : window.scrollY > 300;
+      topBtn.classList.toggle('show', past);
+    };
+    window.addEventListener('scroll', syncTopBtn, { passive: true });
+    window.addEventListener('resize', syncTopBtn);
+    syncTopBtn();
+    topBtn.addEventListener('click', (e) => {
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      // Keyboard press (no mouse position): keep focus near the top, on the first card.
+      if (e.detail === 0) {
+        const first = document.querySelector('.metric-card[data-jump]');
+        if (first) first.focus({ preventScroll: true });
+      }
+    });
+  }
 }

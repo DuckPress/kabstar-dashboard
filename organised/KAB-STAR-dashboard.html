@@ -641,6 +641,36 @@ html, body {
 /* Station subtitle + status badge row under the station name */
 .station-header-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
 
+/* Round "back to top" button, bottom right. Hidden until the metric cards
+   have scrolled out of view; sits below the sidebar and its dark overlay. */
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 35;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s, background 0.15s;
+}
+.back-to-top.show { opacity: 1; visibility: visible; transform: none; }
+.back-to-top:hover { background: var(--accent-hover); }
+.back-to-top:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
+@media (max-width: 720px) { .back-to-top { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: reduce) { .back-to-top { transition: none; transform: none; } }
+@media print { .back-to-top { display: none; } }
+
 /* ── css/cards.css ── */
 /* The metric cards along the top, their warning states, and the status
    banners (error, stale data, API) and header badges. */
@@ -2790,6 +2820,11 @@ html, body {
     </div>
 
   </main>
+
+  <!-- Back to top: shows once the metric cards have scrolled out of view (js/ui/page.js) -->
+  <button type="button" id="back-to-top" class="back-to-top" data-i18n-title="backToTop" data-i18n-aria="backToTop" title="Kembali ke atas" aria-label="Kembali ke atas">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
 </div>
 
 <!-- ═══ FOOTER ═══ -->
@@ -6122,7 +6157,7 @@ const I18N = {
     // station header + tiles
     breadcrumb: 'Papan Pemuka', coords: 'Koordinat', datumGauge: 'Datum: Tolok',
     tLevel: 'Paras Air Semasa', tLevelLoading: 'Sedang mengambil data…', tStatus: 'Status Pasang Surut', tRate: 'Kadar Perubahan',
-    tUpdated: 'Kemaskini Terakhir', tTemp: 'Suhu Terkini', tHumid: 'Kelembapan Terkini', tAnom: 'Bacaan Anomali', tRadar: 'Bacaan Radar', tUs: 'Bacaan Ultrasonik',
+    tUpdated: 'Kemaskini Terakhir', tTemp: 'Suhu Terkini', tHumid: 'Kelembapan Terkini', tAnom: 'Bacaan Anomali', backToTop: 'Kembali ke atas', tRadar: 'Bacaan Radar', tUs: 'Bacaan Ultrasonik',
     distToWater: 'Jarak ke permukaan air', sensorLast: 'Bacaan terakhir {age}', radarNone: 'Tiada bacaan radar', usNone: 'Tiada bacaan ultrasonik',
     anomNone: 'Tiada anomali dikesan', anomCount: '{n} bacaan luar jangkaan dikesan',
     levelSub: 'Paras carta: {mm} mm · Purata: {avg} m', levelWait: 'Menunggu bacaan sah (jurang sensor)',
@@ -6215,7 +6250,7 @@ const I18N = {
     ageS: '{n} s ago', ageMin: '{n} min ago', ageHr: '{h} h ago', ageHrMin: '{h} h {m} min ago', ageDay: '{n} days ago',
     breadcrumb: 'Dashboard', coords: 'Coordinates', datumGauge: 'Datum: Gauge zero',
     tLevel: 'Current Water Level', tLevelLoading: 'Fetching data…', tStatus: 'Tide Status', tRate: 'Rate of Change',
-    tUpdated: 'Last Update', tTemp: 'Current Temperature', tHumid: 'Current Humidity', tAnom: 'Anomalous Readings', tRadar: 'Radar Reading', tUs: 'Ultrasonic Reading',
+    tUpdated: 'Last Update', tTemp: 'Current Temperature', tHumid: 'Current Humidity', tAnom: 'Anomalous Readings', backToTop: 'Back to top', tRadar: 'Radar Reading', tUs: 'Ultrasonic Reading',
     distToWater: 'Distance to the water surface', sensorLast: 'Last reading {age}', radarNone: 'No radar reading', usNone: 'No ultrasonic reading',
     anomNone: 'No anomalies detected', anomCount: '{n} out-of-range readings detected',
     levelSub: 'Chart level: {mm} mm · Mean: {avg} m', levelWait: 'Waiting for a valid reading (sensor gap)',
@@ -6611,6 +6646,31 @@ function setupPage() {
   document.querySelectorAll('.info-tab[data-tab]').forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
   });
+
+  // Back-to-top button: visible once the metric cards start disappearing under
+  // the top bar (for example after a card jump), and scrolls the page back up.
+  const topBtn = document.getElementById('back-to-top');
+  if (topBtn) {
+    const grid = document.querySelector('.metric-grid');
+    const topbar = document.getElementById('topbar');
+    const syncTopBtn = () => {
+      const barBottom = topbar ? topbar.getBoundingClientRect().bottom : 0;
+      const past = grid ? grid.getBoundingClientRect().top < barBottom : window.scrollY > 300;
+      topBtn.classList.toggle('show', past);
+    };
+    window.addEventListener('scroll', syncTopBtn, { passive: true });
+    window.addEventListener('resize', syncTopBtn);
+    syncTopBtn();
+    topBtn.addEventListener('click', (e) => {
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      // Keyboard press (no mouse position): keep focus near the top, on the first card.
+      if (e.detail === 0) {
+        const first = document.querySelector('.metric-card[data-jump]');
+        if (first) first.focus({ preventScroll: true });
+      }
+    });
+  }
 }
 
 /* ── js/data/fetch.js ── */

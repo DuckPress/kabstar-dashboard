@@ -64,7 +64,7 @@ export const I18N = {
     // station header + tiles
     breadcrumb: 'Papan Pemuka', coords: 'Koordinat', datumGauge: 'Datum: Tolok',
     tLevel: 'Paras Air Semasa', tLevelLoading: 'Sedang mengambil data…', tStatus: 'Status Pasang Surut', tRate: 'Kadar Perubahan',
-    tUpdated: 'Kemaskini Terakhir', tTemp: 'Suhu Terkini', tHumid: 'Kelembapan Terkini', tAnom: 'Bacaan Anomali', tRadar: 'Bacaan Radar', tUs: 'Bacaan Ultrasonik',
+    tUpdated: 'Kemaskini Terakhir', tTemp: 'Suhu Terkini', tHumid: 'Kelembapan Terkini', tAnom: 'Bacaan Anomali', backToTop: 'Kembali ke atas', tRadar: 'Bacaan Radar', tUs: 'Bacaan Ultrasonik',
     distToWater: 'Jarak ke permukaan air', sensorLast: 'Bacaan terakhir {age}', radarNone: 'Tiada bacaan radar', usNone: 'Tiada bacaan ultrasonik',
     anomNone: 'Tiada anomali dikesan', anomCount: '{n} bacaan luar jangkaan dikesan',
     levelSub: 'Paras carta: {mm} mm · Purata: {avg} m', levelWait: 'Menunggu bacaan sah (jurang sensor)',
@@ -157,7 +157,7 @@ export const I18N = {
     ageS: '{n} s ago', ageMin: '{n} min ago', ageHr: '{h} h ago', ageHrMin: '{h} h {m} min ago', ageDay: '{n} days ago',
     breadcrumb: 'Dashboard', coords: 'Coordinates', datumGauge: 'Datum: Gauge zero',
     tLevel: 'Current Water Level', tLevelLoading: 'Fetching data…', tStatus: 'Tide Status', tRate: 'Rate of Change',
-    tUpdated: 'Last Update', tTemp: 'Current Temperature', tHumid: 'Current Humidity', tAnom: 'Anomalous Readings', tRadar: 'Radar Reading', tUs: 'Ultrasonic Reading',
+    tUpdated: 'Last Update', tTemp: 'Current Temperature', tHumid: 'Current Humidity', tAnom: 'Anomalous Readings', backToTop: 'Back to top', tRadar: 'Radar Reading', tUs: 'Ultrasonic Reading',
     distToWater: 'Distance to the water surface', sensorLast: 'Last reading {age}', radarNone: 'No radar reading', usNone: 'No ultrasonic reading',
     anomNone: 'No anomalies detected', anomCount: '{n} out-of-range readings detected',
     levelSub: 'Chart level: {mm} mm · Mean: {avg} m', levelWait: 'Waiting for a valid reading (sensor gap)',

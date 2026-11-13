@@ -485,3 +485,33 @@
 
 /* Station subtitle + status badge row under the station name */
 .station-header-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+
+/* Round "back to top" button, bottom right. Hidden until the metric cards
+   have scrolled out of view; sits below the sidebar and its dark overlay. */
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 35;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s, background 0.15s;
+}
+.back-to-top.show { opacity: 1; visibility: visible; transform: none; }
+.back-to-top:hover { background: var(--accent-hover); }
+.back-to-top:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
+@media (max-width: 720px) { .back-to-top { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: reduce) { .back-to-top { transition: none; transform: none; } }
+@media print { .back-to-top { display: none; } }
