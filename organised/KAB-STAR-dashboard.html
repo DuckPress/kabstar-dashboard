@@ -689,6 +689,9 @@ html, body {
 .metric-card.card-updated::before { background: var(--green); }
 .metric-card.card-temp::before    { background: #e05252; }
 .metric-card.card-humid::before   { background: #27a3c9; }
+.metric-card[hidden] { display: none; }   /* radar/ultrasonic cards on simulated stations */
+.metric-card.card-radar::before   { background: var(--sensor-radar); }
+.metric-card.card-us::before      { background: var(--sensor-us); }
 .metric-card.card-anomaly::before { background: #9333ea; }
 .metric-card.card-anomaly.has-anomalies { border-color: rgba(147,51,234,0.30); background: #fdf4ff; }
 .metric-card.card-anomaly.has-anomalies .metric-value { color: #7e22ce; }
@@ -2455,6 +2458,16 @@ html, body {
         <div class="metric-value" id="card-humid">—<span class="metric-unit">%</span></div>
         <div class="metric-sub" id="card-humid-sub">—</div>
       </div>
+      <div class="metric-card card-radar" id="card-radar-wrap" data-jump="radar-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tRadar">Bacaan Radar</div>
+        <div class="metric-value" id="card-radar">—<span class="metric-unit">cm</span></div>
+        <div class="metric-sub" id="card-radar-sub">—</div>
+      </div>
+      <div class="metric-card card-us" id="card-us-wrap" data-jump="us-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tUs">Bacaan Ultrasonik</div>
+        <div class="metric-value" id="card-us">—<span class="metric-unit">cm</span></div>
+        <div class="metric-sub" id="card-us-sub">—</div>
+      </div>
       <div class="metric-card card-anomaly" id="card-anomaly-wrap" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
         <div class="metric-label" data-i18n="tAnom">Bacaan Anomali</div>
         <div class="metric-value" id="card-anomaly">—</div>
@@ -2733,7 +2746,7 @@ html, body {
     <div class="env-chart-grid sensor-chart-grid" id="sensor-chart-grid">
 
       <!-- Radar distance -->
-      <div class="chart-card">
+      <div class="chart-card" id="radar-chart-card">
         <div class="chart-card-header">
           <div>
             <div class="env-chart-card-title" data-i18n="radarChart">Jarak Radar</div>
@@ -2754,7 +2767,7 @@ html, body {
       </div>
 
       <!-- Ultrasonic distance -->
-      <div class="chart-card">
+      <div class="chart-card" id="us-chart-card">
         <div class="chart-card-header">
           <div>
             <div class="env-chart-card-title" data-i18n="usChart">Jarak Ultrasonik</div>
@@ -5318,6 +5331,72 @@ function renderSensorDistCharts(show, labels, dist, timestamps, aggS) {
   renderSensorDistChart('us',    labels, dist.us,    timestamps, aggS);
 }
 
+/* ── js/ui/cards.js ── */
+/* The metric cards at the top: the radar / ultrasonic readings, and clicking a
+   card scrolls to the chart it summarises. (The other cards are filled in
+   ui/dashboard.js.) */
+
+
+/**
+ * Radar and ultrasonic cards: each sensor's newest distance to the water (cm),
+ * from the station's full raw series, not just the window on the charts.
+ * If that sensor has gone quiet while the other kept reading, the card says
+ * how old its last reading is. Simulated stations have no sensors, so the two
+ * cards are hidden for them (as the distance charts are).
+ */
+function updateSensorCards(d, isReal) {
+  const dist = isReal ? sensorDistances(d, false) : null;
+  const ts = d.timestamps || [];
+  for (const [key, id, none] of [['radar', 'card-radar', 'radarNone'], ['us', 'card-us', 'usNone']]) {
+    const card = document.getElementById(id + '-wrap');
+    const valEl = document.getElementById(id);
+    const subEl = document.getElementById(id + '-sub');
+    if (!card || !valEl || !subEl) continue;
+    card.hidden = !isReal;
+    if (!isReal) continue;
+    const vals = dist[key];
+    let i = vals.length - 1;
+    while (i >= 0 && (vals[i] === null || isNaN(vals[i]))) i--;
+    if (i < 0) {
+      valEl.innerHTML = '—<span class="metric-unit">cm</span>';
+      subEl.textContent = T(none);
+      continue;
+    }
+    valEl.innerHTML = `${vals[i].toFixed(1)}<span class="metric-unit">cm</span>`;
+    const readingMs = ts[i] ? new Date(ts[i]).getTime() : NaN;
+    subEl.textContent = (i === vals.length - 1 || isNaN(readingMs))
+      ? T('distToWater')
+      : T('sensorLast', { age: fmtAge(Date.now() - readingMs) });
+  }
+}
+
+/** Wire this file's buttons and listeners (called once from main.js). */
+function setupCardJumps() {
+  // ── Metric cards → their graph: click / Enter / Space scrolls to the chart
+  //    card named in data-jump and flashes it. The anomaly card also turns the
+  //    anomaly markers back on if they were hidden, since that's what it points at.
+  (function wireCardJumps() {
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function jump(card) {
+      const target = document.getElementById(card.dataset.jump);
+      if (!target) return;
+      if (card.id === 'card-anomaly-wrap' && !state.showAnomalies) toggleAnomalyMarkers();
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      target.classList.remove('jump-flash');
+      void target.offsetWidth;                 // restart the animation on a repeat click
+      target.classList.add('jump-flash');
+      clearTimeout(target._jumpTimer);
+      target._jumpTimer = setTimeout(() => target.classList.remove('jump-flash'), 1500);
+    }
+    document.querySelectorAll('.metric-card[data-jump]').forEach(card => {
+      card.addEventListener('click', () => jump(card));
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump(card); }
+      });
+    });
+  })();
+}
+
 /* ── js/ui/sidebar.js ── */
 /* The station list in the sidebar (real station first, demo stations folded
    into a group) and switching between stations. */
@@ -5873,6 +5952,9 @@ function updateDashboard(idx) {
     humidSubEl.textContent = T('humidNone');
   }
 
+  // ── Radar & ultrasonic cards (real station only) ──────────────────────────
+  updateSensorCards(d, idx === 0 && s.isIoT);
+
   // ── Stale-data honesty ───────────────────────────────────────────────
   // The tiles above are labelled "SEMASA / TERKINI". When the real station's
   // newest reading is old, say so loudly and stop making live claims (tide
@@ -6040,7 +6122,8 @@ const I18N = {
     // station header + tiles
     breadcrumb: 'Papan Pemuka', coords: 'Koordinat', datumGauge: 'Datum: Tolok',
     tLevel: 'Paras Air Semasa', tLevelLoading: 'Sedang mengambil data…', tStatus: 'Status Pasang Surut', tRate: 'Kadar Perubahan',
-    tUpdated: 'Kemaskini Terakhir', tTemp: 'Suhu Terkini', tHumid: 'Kelembapan Terkini', tAnom: 'Bacaan Anomali',
+    tUpdated: 'Kemaskini Terakhir', tTemp: 'Suhu Terkini', tHumid: 'Kelembapan Terkini', tAnom: 'Bacaan Anomali', tRadar: 'Bacaan Radar', tUs: 'Bacaan Ultrasonik',
+    distToWater: 'Jarak ke permukaan air', sensorLast: 'Bacaan terakhir {age}', radarNone: 'Tiada bacaan radar', usNone: 'Tiada bacaan ultrasonik',
     anomNone: 'Tiada anomali dikesan', anomCount: '{n} bacaan luar jangkaan dikesan',
     levelSub: 'Paras carta: {mm} mm · Purata: {avg} m', levelWait: 'Menunggu bacaan sah (jurang sensor)',
     tideUnknown: 'Tidak Diketahui', tideHigh: 'Air Tinggi', tideLow: 'Air Rendah', tideRising: 'Sedang Naik', tideFalling: 'Sedang Surut', tideStable: 'Stabil', tideStale: 'Data Lapuk',
@@ -6132,7 +6215,8 @@ const I18N = {
     ageS: '{n} s ago', ageMin: '{n} min ago', ageHr: '{h} h ago', ageHrMin: '{h} h {m} min ago', ageDay: '{n} days ago',
     breadcrumb: 'Dashboard', coords: 'Coordinates', datumGauge: 'Datum: Gauge zero',
     tLevel: 'Current Water Level', tLevelLoading: 'Fetching data…', tStatus: 'Tide Status', tRate: 'Rate of Change',
-    tUpdated: 'Last Update', tTemp: 'Current Temperature', tHumid: 'Current Humidity', tAnom: 'Anomalous Readings',
+    tUpdated: 'Last Update', tTemp: 'Current Temperature', tHumid: 'Current Humidity', tAnom: 'Anomalous Readings', tRadar: 'Radar Reading', tUs: 'Ultrasonic Reading',
+    distToWater: 'Distance to the water surface', sensorLast: 'Last reading {age}', radarNone: 'No radar reading', usNone: 'No ultrasonic reading',
     anomNone: 'No anomalies detected', anomCount: '{n} out-of-range readings detected',
     levelSub: 'Chart level: {mm} mm · Mean: {avg} m', levelWait: 'Waiting for a valid reading (sensor gap)',
     tideUnknown: 'Unknown', tideHigh: 'High Water', tideLow: 'Low Water', tideRising: 'Rising', tideFalling: 'Falling', tideStable: 'Stable', tideStale: 'Stale Data',
@@ -6757,37 +6841,6 @@ function setupCsvExport() {
     a.click();
     URL.revokeObjectURL(url);
   });
-}
-
-/* ── js/ui/cards.js ── */
-/* The metric cards at the top: clicking one scrolls to the chart it summarises. */
-
-
-/** Wire this file's buttons and listeners (called once from main.js). */
-function setupCardJumps() {
-  // ── Metric cards → their graph: click / Enter / Space scrolls to the chart
-  //    card named in data-jump and flashes it. The anomaly card also turns the
-  //    anomaly markers back on if they were hidden, since that's what it points at.
-  (function wireCardJumps() {
-    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function jump(card) {
-      const target = document.getElementById(card.dataset.jump);
-      if (!target) return;
-      if (card.id === 'card-anomaly-wrap' && !state.showAnomalies) toggleAnomalyMarkers();
-      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-      target.classList.remove('jump-flash');
-      void target.offsetWidth;                 // restart the animation on a repeat click
-      target.classList.add('jump-flash');
-      clearTimeout(target._jumpTimer);
-      target._jumpTimer = setTimeout(() => target.classList.remove('jump-flash'), 1500);
-    }
-    document.querySelectorAll('.metric-card[data-jump]').forEach(card => {
-      card.addEventListener('click', () => jump(card));
-      card.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump(card); }
-      });
-    });
-  })();
 }
 
 /* ── js/main.js ── */

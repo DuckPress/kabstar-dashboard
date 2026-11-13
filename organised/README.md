@@ -80,7 +80,7 @@ Every refresh follows the same path:
 | `drag-select.js` | Drag across the main chart to zoom in. |
 | **ui/** | |
 | `dashboard.js` | `updateDashboard()`: redraws everything for the selected station. |
-| `cards.js` | Clicking a metric card scrolls to its chart. |
+| `cards.js` | The radar and ultrasonic cards, and clicking a card to scroll to its chart. |
 | `time-window.js` | Preset buttons, point cap, reset/latest, the window saved in the page address. |
 | `calendar.js` | The date-range calendar. |
 | `sidebar.js` | The station list and switching stations. |

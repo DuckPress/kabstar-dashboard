@@ -13,6 +13,7 @@ import { renderMiniChart } from '../charts/mini-chart.js';
 import { renderHumidChart, renderTempChart } from '../charts/env-charts.js';
 import { renderSensorDistCharts, sensorDistances } from '../charts/sensor-charts.js';
 import { renderTideEvents } from './tide-events.js';
+import { updateSensorCards } from './cards.js';
 import { fmtAge } from './connectivity.js';
 import { updateStationMap } from './map.js';
 import { updateWindowSpan } from './time-window.js';
@@ -170,6 +171,9 @@ export function updateDashboard(idx) {
     humidValEl.innerHTML = `—<span class="metric-unit">%</span>`;
     humidSubEl.textContent = T('humidNone');
   }
+
+  // ── Radar & ultrasonic cards (real station only) ──────────────────────────
+  updateSensorCards(d, idx === 0 && s.isIoT);
 
   // ── Stale-data honesty ───────────────────────────────────────────────
   // The tiles above are labelled "SEMASA / TERKINI". When the real station's

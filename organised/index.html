@@ -267,6 +267,16 @@
         <div class="metric-value" id="card-humid">—<span class="metric-unit">%</span></div>
         <div class="metric-sub" id="card-humid-sub">—</div>
       </div>
+      <div class="metric-card card-radar" id="card-radar-wrap" data-jump="radar-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tRadar">Bacaan Radar</div>
+        <div class="metric-value" id="card-radar">—<span class="metric-unit">cm</span></div>
+        <div class="metric-sub" id="card-radar-sub">—</div>
+      </div>
+      <div class="metric-card card-us" id="card-us-wrap" data-jump="us-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tUs">Bacaan Ultrasonik</div>
+        <div class="metric-value" id="card-us">—<span class="metric-unit">cm</span></div>
+        <div class="metric-sub" id="card-us-sub">—</div>
+      </div>
       <div class="metric-card card-anomaly" id="card-anomaly-wrap" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
         <div class="metric-label" data-i18n="tAnom">Bacaan Anomali</div>
         <div class="metric-value" id="card-anomaly">—</div>
@@ -545,7 +555,7 @@
     <div class="env-chart-grid sensor-chart-grid" id="sensor-chart-grid">
 
       <!-- Radar distance -->
-      <div class="chart-card">
+      <div class="chart-card" id="radar-chart-card">
         <div class="chart-card-header">
           <div>
             <div class="env-chart-card-title" data-i18n="radarChart">Jarak Radar</div>
@@ -566,7 +576,7 @@
       </div>
 
       <!-- Ultrasonic distance -->
-      <div class="chart-card">
+      <div class="chart-card" id="us-chart-card">
         <div class="chart-card-header">
           <div>
             <div class="env-chart-card-title" data-i18n="usChart">Jarak Ultrasonik</div>

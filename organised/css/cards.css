@@ -45,6 +45,9 @@
 .metric-card.card-updated::before { background: var(--green); }
 .metric-card.card-temp::before    { background: #e05252; }
 .metric-card.card-humid::before   { background: #27a3c9; }
+.metric-card[hidden] { display: none; }   /* radar/ultrasonic cards on simulated stations */
+.metric-card.card-radar::before   { background: var(--sensor-radar); }
+.metric-card.card-us::before      { background: var(--sensor-us); }
 .metric-card.card-anomaly::before { background: #9333ea; }
 .metric-card.card-anomaly.has-anomalies { border-color: rgba(147,51,234,0.30); background: #fdf4ff; }
 .metric-card.card-anomaly.has-anomalies .metric-value { color: #7e22ce; }
