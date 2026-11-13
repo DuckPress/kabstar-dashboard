@@ -1,0 +1,248 @@
+/* The date-range calendar pop-up and the time-window summary line. */
+
+/* ─── CUSTOM CALENDAR PICKER ─── */
+.cal-wrap {
+  position: relative;
+  display: inline-block;
+}
+.cal-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  background: var(--white);
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-dark);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .15s, box-shadow .15s;
+  min-width: 130px;
+}
+.cal-trigger:hover { border-color: var(--navy-light); }
+.cal-trigger.open  { border-color: var(--navy-light); box-shadow: 0 0 0 2px rgba(30,64,150,.12); }
+.cal-trigger svg   { opacity: .5; flex-shrink: 0; }
+
+.cal-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 300;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  padding: 12px;
+  min-width: 232px;
+  user-select: none;
+}
+.cal-popup.open { display: block; }
+
+/* header row */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cal-nav {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1;
+  transition: background .12s, color .12s;
+}
+.cal-nav:hover { background: var(--gray-100); color: var(--text-dark); }
+.cal-month-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+  cursor: pointer;
+}
+
+/* day-of-week header */
+.cal-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 2px;
+}
+.cal-dow {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 2px 0 4px;
+}
+
+/* day grid */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+.cal-day {
+  position: relative;
+  text-align: center;
+  padding: 5px 2px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: default;
+  transition: background .12s, color .12s;
+}
+/* Days that have data */
+.cal-day.has-data {
+  color: var(--text-dark);
+  cursor: pointer;
+  font-weight: 600;
+}
+.cal-day.has-data:hover { background: rgba(30,64,150,.08); color: var(--navy-light); }
+
+/* Dot under days with data */
+.cal-day.has-data::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--navy-light);
+}
+
+/* Selected day */
+.cal-day.selected {
+  background: var(--navy-light) !important;
+  color: #fff !important;
+}
+.cal-day.selected::after { background: rgba(255,255,255,.7); }
+
+/* In-range days (between from and to) */
+.cal-day.in-range {
+  background: rgba(30,64,150,.08);
+  border-radius: 0;
+}
+.cal-day.range-start { border-radius: 6px 0 0 6px; }
+.cal-day.range-end   { border-radius: 0 6px 6px 0; }
+.cal-day.range-start.range-end { border-radius: 6px; }
+
+/* Other-month filler days */
+.cal-day.other-month { opacity: .3; cursor: default; pointer-events: none; }
+
+/* Time row below the grid */
+
+.cal-time-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ─── TIME WINDOW UI ─── */
+.window-span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: -8px 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ctrl-adv-toggle {
+  background: none; border: 0; padding: 0; margin: 0;
+  font: inherit; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.ctrl-adv-toggle:hover { color: var(--text-mid); }
+.ctrl-adv-toggle .chev { display: inline-block; transition: transform .18s; }
+.ctrl-advanced.open .ctrl-adv-toggle .chev { transform: rotate(90deg); }
+.ctrl-adv-body { display: none; flex-direction: column; gap: 6px; margin-top: 2px; }
+.ctrl-advanced.open .ctrl-adv-body { display: flex; }
+.cal-hint { font-size: 11px; color: var(--text-muted); margin: 8px 0 6px; }
+.cal-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cal-time-cell { display: flex; flex-direction: column; gap: 3px; }
+.cal-time-input {
+  font-family: var(--mono); font-size: 12px; padding: 5px 8px;
+  border: 1px solid var(--gray-200); border-radius: 6px;
+  background: var(--white); color: var(--text-dark); width: 100%;
+}
+.cal-time-input:disabled { opacity: .4; }
+.cal-actions { display: flex; gap: 8px; }
+.cal-actions .cal-clear { flex: 1; }
+.cal-done { color: var(--on-accent) !important; background: var(--accent) !important; border-color: var(--accent) !important; }
+.cal-done:hover { background: var(--accent-hover) !important; }
+.export-range-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-mid); cursor: pointer; user-select: none; white-space: nowrap;
+}
+.export-range-toggle input { accent-color: var(--navy); }
+
+/* Clear link */
+.cal-clear {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  background: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: background .12s;
+}
+.cal-clear:hover { background: var(--gray-50); }
+
+.ctrl-reset-btn {
+  padding: 6px 13px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.ctrl-reset-btn:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.ctrl-pts-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--navy-mid);
+  background: var(--gray-100);
+  border-radius: 10px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .ctrl-slider { width: 110px; }
+  .chart-controls { gap: 12px; }
+}

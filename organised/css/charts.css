@@ -1,0 +1,491 @@
+/* Chart cards and everything on them: the time-window toolbar, legends,
+   temperature/humidity and radar/ultrasonic charts, drag-to-zoom and the point-cap controls. */
+
+/* ─── ZOOM PRESET TOOLBAR ─── */
+.zoom-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 0 4px;
+  border-bottom: 1px solid var(--gray-100);
+  margin-bottom: 14px;
+}
+
+.zoom-toolbar-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.zoom-preset-btn {
+  padding: 4px 11px;
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-mid);
+  background: var(--white);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.zoom-preset-btn:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.zoom-preset-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.zoom-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+}
+.zoom-seg > .zoom-preset-btn,
+.zoom-more-btn {
+  border-color: transparent;
+  background: transparent;
+}
+.zoom-seg > .zoom-preset-btn:hover,
+.zoom-more-btn:hover { background: var(--gray-100); border-color: transparent; }
+.zoom-seg > .zoom-preset-btn.active { background: var(--accent); color: var(--on-accent); }
+
+.zoom-more { position: relative; }
+.zoom-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.zoom-more-btn.active { background: var(--accent); color: var(--on-accent); }
+.zoom-more-btn svg { transition: transform 0.15s; }
+.zoom-more.open .zoom-more-btn svg { transform: rotate(180deg); }
+.zoom-more-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 130px;
+  padding: 5px;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(13,24,50,0.16);
+}
+.zoom-more.open .zoom-more-menu { display: flex; }
+.zoom-more-menu .zoom-preset-btn {
+  text-align: left;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.zoom-more-menu .zoom-preset-btn:hover { background: var(--gray-100); }
+.zoom-more-menu .zoom-preset-btn.active { background: var(--accent); color: var(--on-accent); }
+
+.zoom-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.zoom-actions .ctrl-reset-btn {
+  align-self: center;
+  padding: 4px 11px;
+  border-radius: 20px;
+}
+
+.zoom-live-btn {
+  padding: 4px 11px;
+  border: 1px solid rgba(26,158,95,0.35);
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+  background: rgba(26,158,95,0.07);
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.zoom-live-btn::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 1.4s infinite;
+}
+
+.zoom-live-btn:hover { background: rgba(26,158,95,0.14); }
+
+/* ─── ENV CHART CARDS ─── */
+.env-chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 860px) {
+  .env-chart-grid { grid-template-columns: 1fr; }
+}
+
+.env-chart-wrap {
+  position: relative;
+  height: 200px;
+}
+
+.env-chart-card-title { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+.env-chart-card-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.env-no-data {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--gray-50);
+  border-radius: 6px;
+}
+
+.env-no-data svg { opacity: 0.35; }
+
+/* ─── SENSOR DISTANCE CHARTS (radar / ultrasonic, below the map) ───
+   Same cards as the env charts; colours match chartTheme() in js/charts/theme.js
+   (radar = the main level line, ultrasonic = its overlay, at full strength). */
+
+.sensor-chart-grid { margin-top: 16px; margin-bottom: 0; }
+.sensor-chart-grid[hidden] { display: none; }
+.sensor-chart-wrap { height: 180px; }
+.legend-dot-radar { background: var(--sensor-radar); }
+.legend-dot-us    { background: var(--sensor-us); }
+.sensor-stat { font-weight: 600; }
+.sensor-stat-radar { color: var(--sensor-radar); }
+.sensor-stat-us    { color: var(--sensor-us); }
+
+/* ─── CHART CARD ─── */
+.chart-card {
+  background: var(--chart-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-100);
+  padding: 20px 22px 18px;
+  margin-bottom: 22px;
+}
+
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.chart-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.chart-card-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.legend-toggle {
+  padding: 2px 8px;
+  margin: -2px 0;
+  background: none;
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.legend-toggle:hover { background: var(--gray-50); }
+.legend-toggle.off { opacity: 0.55; text-decoration: line-through; }
+.legend-toggle[hidden] { display: none; }
+
+.chart-wrap {
+  position: relative;
+  height: 280px;
+}
+
+/* ─── DRAG-SELECT OVERLAY ─── */
+#select-overlay {
+  position: absolute;
+  top: 0; bottom: 0;
+  pointer-events: none;
+  background: rgba(30,64,150,0.10);
+  border-left: 2px solid rgba(30,64,150,0.55);
+  border-right: 2px solid rgba(30,64,150,0.55);
+  display: none;
+  z-index: 5;
+}
+
+/* Hint shown above chart when no selection is active */
+.chart-drag-hint {
+  position: absolute;
+  top: 8px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13,33,73,0.70);
+  color: rgba(255,255,255,0.85);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  pointer-events: none;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  z-index: 6;
+  transition: opacity 0.3s;
+}
+
+/* Selection info bar shown below chart after a drag */
+.chart-selection-bar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 7px 12px;
+  background: rgba(30,64,150,0.07);
+  border: 1px solid rgba(30,64,150,0.18);
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-mid);
+}
+
+.chart-selection-bar.visible { display: flex; }
+
+.sel-bar-label {
+  font-weight: 700;
+  color: var(--navy-light);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sel-bar-range {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-dark);
+  flex: 1;
+}
+
+.sel-bar-stats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.sel-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.sel-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+}
+
+.sel-stat-value {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.zoom-out-btn {
+  padding: 5px 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.zoom-out-btn:hover { background: var(--accent-hover); }
+
+/* Cursor changes while hovering the chart */
+#mainChart { cursor: crosshair; }
+
+/* ─── CHART CONTROLS ─── */
+.chart-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 14px 0 6px;
+  border-top: 1px solid var(--gray-100);
+  margin-top: 16px;
+}
+
+.ctrl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ctrl-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Points slider + input row */
+.ctrl-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ctrl-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 160px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--gray-200);
+  outline: none;
+  cursor: pointer;
+}
+
+.ctrl-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 2px solid var(--gold);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(13,33,73,0.25);
+  transition: transform 0.12s;
+}
+
+.ctrl-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+.ctrl-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 2px solid var(--gold);
+  cursor: pointer;
+}
+
+.ctrl-number {
+  width: 58px;
+  padding: 5px 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dark);
+  background: var(--white);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ctrl-number:focus {
+  border-color: var(--navy-light);
+  box-shadow: 0 0 0 2px rgba(30,64,150,0.12);
+}
+
+/* Datetime range */
+.ctrl-dt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Legend dot colours (match the chart lines in js/charts/) */
+.legend-dot-level { background: #1e4096; }
+.legend-dot-avg   { background: #c9a227; }
+.legend-dot-anom  { background: #dc2626; }
+.legend-dot-temp  { background: #e05252; }
+.legend-dot-humid { background: #27a3c9; }
+.legend-dot-mean  { background: rgba(201,162,39,0.7); }
+
+/* Latest / average figures beside the temperature and humidity chart titles */
+.env-stat       { font-weight: 600; }
+.env-stat-temp  { color: #e05252; }
+.env-stat-humid { color: #27a3c9; }
+
+/* Cards inside a two-column chart grid: the grid's gap does the spacing */
+.env-chart-grid > .chart-card { margin-bottom: 0; }
+
+.chart-drag-hint .hint-icon { display: inline; vertical-align: middle; margin-right: 3px; }

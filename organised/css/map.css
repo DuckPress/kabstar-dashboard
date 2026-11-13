@@ -1,0 +1,206 @@
+/* Maps: the full-screen station picker, the gauge marker icons, popups
+   and the small map in the station tab (Leaflet overrides). */
+
+/* ═══ FULL-SCREEN MAP OVERLAY ═══ */
+#map-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  background: var(--navy);
+  transform: translateY(-100%);
+  transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+}
+#map-overlay.open { transform: translateY(0); }
+
+#map-overlay-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  height: 56px;
+  background: var(--navy);
+  border-bottom: 2px solid var(--gold);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+#map-overlay-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-accent);
+  letter-spacing: 0.2px;
+}
+
+#map-overlay-legend {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+}
+
+.mol-chip { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; }
+.mol-dot  { width: 9px; height: 9px; border-radius: 50%; }
+.mol-active  { color: #86efac; }
+.mol-active  .mol-dot { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.mol-warning { color: #fcd34d; }
+.mol-warning .mol-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+.mol-offline { color: var(--gray-400); }
+.mol-offline .mol-dot { background: var(--gray-600); }
+
+#map-overlay-close {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: var(--on-accent);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.18s;
+  margin-left: auto;
+}
+#map-overlay-close:hover { background: rgba(255,255,255,0.18); }
+
+#map-overlay-map { flex: 1; width: 100%; }
+
+/* ─── Custom tide-gauge marker icon ─── */
+.tg-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+
+.tg-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.50);
+  border: 2.5px solid rgba(255,255,255,0.9);
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.tg-icon.active  { background: linear-gradient(135deg,#1e4096,#2563eb); }
+.tg-icon.warning { background: linear-gradient(135deg,#b45309,#d97706); }
+.tg-icon.offline { background: linear-gradient(135deg,#374151,#6b748f); }
+.tg-icon.selected { transform: scale(1.28); box-shadow: 0 4px 20px rgba(201,162,39,0.80); border-color: var(--gold) !important; }
+
+.tg-pulse {
+  position: absolute; top: -4px; right: -4px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+.tg-pulse.active  { background: #22c55e; animation: pulse-green 2s ease-in-out infinite; }
+.tg-pulse.warning { background: #f59e0b; animation: pulse-amber 1.6s ease-in-out infinite; }
+.tg-pulse.offline { display: none; }
+
+.tg-label {
+  margin-top: 5px;
+  background: rgba(10,20,50,0.90);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255,255,255,0.12);
+  pointer-events: none;
+}
+
+/* ─── Map station popup ─── */
+.map-station-popup { font-family: var(--font-sans); min-width: 210px; }
+
+.msp-header {
+  background: var(--navy);
+  padding: 11px 14px 9px;
+  border-radius: 8px 8px 0 0;
+  margin: -13px -19px 10px;
+}
+.msp-id   { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size:9px; color:var(--gold-light); font-weight:600; letter-spacing:1px; margin-bottom:2px; }
+.msp-name { font-size:13px; font-weight:700; color:#fff; line-height:1.2; }
+.msp-location { font-size:10px; color:var(--gray-400); margin-top:2px; }
+
+.msp-body {}
+.msp-row  { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--gray-100); font-size:11px; }
+.msp-row:last-child { border-bottom:none; }
+.msp-key  { color:var(--text-muted); font-weight:500; }
+.msp-val  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size:11px; color:var(--text-dark); font-weight:600; }
+
+.msp-status { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
+.msp-status::before { content:''; width:6px; height:6px; border-radius:50%; }
+.msp-status.active  { background:rgba(34,197,94,0.12);  color:#15803d; }
+.msp-status.active::before  { background:#22c55e; }
+.msp-status.warning { background:rgba(245,158,11,0.12); color:#92400e; }
+.msp-status.warning::before { background:#f59e0b; }
+.msp-status.offline { background:rgba(107,116,143,0.12); color:var(--text-muted); }
+.msp-status.offline::before { background:var(--gray-600); }
+
+.msp-select-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 0;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background 0.18s;
+}
+.msp-select-btn:hover { background: var(--accent-hover); }
+
+/* Leaflet popup overrides for overlay map */
+#map-overlay-map .leaflet-popup-content-wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 6px 28px rgba(13,33,73,0.30) !important;
+  padding: 13px 19px !important;
+  border: 1px solid var(--gray-100) !important;
+}
+#map-overlay-map .leaflet-popup-content { margin: 0 !important; }
+#map-overlay-map .leaflet-popup-tip-container { display: none; }
+
+/* ─── Small station map in Maklumat Stesen tab ─── */
+.station-map-wrap {
+  margin-top: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+
+#station-map { height: 180px; width: 100%; z-index: 0; }
+
+/* Generic small popup (inside station tab) */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 18px rgba(13,33,73,0.18) !important;
+  padding: 0 !important;
+  border: 1px solid var(--gray-100) !important;
+}
+.leaflet-popup-content { margin: 0 !important; font-family: var(--font-sans) !important; }
+.map-popup { padding: 12px 14px; min-width: 160px; }
+.map-popup-name  { font-size:12px; font-weight:700; color:var(--navy); margin-bottom:4px; }
+.map-popup-loc   { font-size:11px; color:var(--text-muted); margin-bottom:5px; }
+.map-popup-coord { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size:10px; color:var(--text-mid); background:var(--gray-50); padding:3px 6px; border-radius:4px; display:inline-block; margin-bottom:5px; }
+.map-popup-status { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
+.map-popup-status::before { content:''; width:6px; height:6px; border-radius:50%; }
+.map-popup-status.active  { background:rgba(34,197,94,0.12); color:#15803d; }
+.map-popup-status.active::before  { background:#22c55e; }
+.map-popup-status.warning { background:rgba(245,158,11,0.12); color:#92400e; }
+.map-popup-status.warning::before { background:#f59e0b; }
+.map-popup-status.offline { background:rgba(107,116,143,0.12); color:var(--text-muted); }
+.map-popup-status.offline::before { background:var(--gray-400); }
+.leaflet-control-attribution { font-size:9px !important; }
+

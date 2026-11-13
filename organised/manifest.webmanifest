@@ -1,0 +1,32 @@
+{
+  "name": "KAB STAR — Sistem Pemantauan Air Pasang Surut",
+  "short_name": "KAB STAR",
+  "description": "Mobile tidal monitoring dashboard (LoRa + Google Sheets).",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d2149",
+  "theme_color": "#0d2149",
+  "lang": "ms",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230d2149'/%3E%3Ccircle cx='96' cy='86' r='34' fill='%23c9a227'/%3E%3Cpath d='M28 132c16 0 16 12 32 12s16-12 32-12 16 12 32 12 16-12 32-12' fill='none' stroke='%23c9a227' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='86' fill='%230d2149'/%3E%3Ccircle cx='256' cy='230' r='92' fill='%23c9a227'/%3E%3Cpath d='M74 352c43 0 43 32 86 32s43-32 86-32 43 32 86 32 43-32 86-32' fill='none' stroke='%23c9a227' stroke-width='24' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d2149" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- iOS ignores manifest icons entirely and needs a raster touch icon. -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <title>KAB STAR — Sistem Pemantauan Air Pasang Surut Mudah Alih</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <!-- Renders the temperature-threshold line on the env chart; without it the
+       plugins.annotation config in _buildEnvChartConfig is silently ignored. -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Dashboard styles, general to specific (see README.md) -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <link rel="stylesheet" href="css/calendar.css">
+  <link rel="stylesheet" href="css/panels.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<!-- ═══ FULL-SCREEN STATION MAP OVERLAY ═══ -->
+<div id="map-overlay">
+  <div id="map-overlay-header">
+    <div id="map-overlay-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      <span data-i18n="mapPick">Pilih Stesen — Klik Ikon untuk Butiran</span>
+    </div>
+    <div id="map-overlay-legend">
+      <span class="mol-chip mol-active"><span class="mol-dot"></span><span data-i18n="stActive">Aktif</span></span>
+      <span class="mol-chip mol-warning"><span class="mol-dot"></span><span data-i18n="stWarning">Amaran</span></span>
+      <span class="mol-chip mol-offline"><span class="mol-dot"></span><span data-i18n="stOffline">Luar Talian</span></span>
+    </div>
+    <button id="map-overlay-close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <span data-i18n="close">Tutup</span>
+    </button>
+  </div>
+  <div id="map-overlay-map"></div>
+</div>
+
+<!-- ═══ TOP BAR ═══ -->
+<header id="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-flag"></div>
+    <div class="topbar-logo-wrap">
+      <div class="topbar-logo-icon">🌊</div>
+      <div class="topbar-logo-text">
+        <span class="agency">Kolej Alam Bina</span>
+        <span class="system">STAR</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-title">
+    <span class="main-title">Sistem Pemantauan Air Pasang Surut Mudah Alih</span>
+    <span class="short-title" aria-hidden="true">KAB STAR</span>
+    <span class="sub-title">Sains Ukur Geomatik UiTM Shah Alam</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="topbar-time">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="date-str" id="date-str">-- --- ----</div>
+    </div>
+    <div class="live-badge">LANGSUNG</div>
+    <button id="map-view-btn" class="topbar-btn" title="Pilih Stesen dari Peta" data-i18n-title="mapBtnTitle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      <span id="btn-map-text">Peta Stesen</span>
+    </button>
+    <button id="theme-toggle" class="topbar-btn icon-only" title="Tema Gelap/Cerah" data-i18n-title="themeTitle" aria-label="Togol tema gelap atau cerah">🌙</button>
+    <button id="lang-toggle" class="topbar-btn icon-only" title="Bahasa / Language" aria-label="Togol bahasa Melayu atau Inggeris">EN</button>
+    <button id="menu-toggle" aria-label="Toggle sidebar">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div id="overlay"></div>
+
+<!-- ═══ SHELL ═══ -->
+<div id="shell">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside id="sidebar">
+    <div class="sidebar-health-bar" id="sidebar-health-bar">
+      <div class="health-chip"><div class="hc-dot green"></div> <span id="hc-active-count">—</span> <span data-i18n="stActive">Aktif</span></div>
+      <div class="health-chip"><div class="hc-dot amber"></div> <span id="hc-warning-count">—</span> <span data-i18n="stWarning">Amaran</span></div>
+      <div class="health-chip"><div class="hc-dot gray"></div>  <span id="hc-offline-count">—</span> <span data-i18n="stOffline">Luar Talian</span></div>
+    </div>
+    <div id="station-list"></div>
+    <div class="sidebar-footer">
+      <strong>KAB STAR Dashboard v1.9</strong><br>
+      <span data-i18n="sidebarTagline">Sistem Air Pasang Surut Mudah Alih</span><br>
+      2024289192
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main id="main">
+
+    <div id="api-banner" role="status">
+      <span class="banner-msg" id="api-banner-msg" data-i18n-html="apiLoading">⏳ <strong>Memuatkan…</strong> Mengambil bacaan terkini daripada Google Sheets.</span>
+    </div>
+
+    <!-- Stale-data notice (#3): shown when the real station's newest reading is old -->
+    <div id="stale-banner" role="alert">
+      <span class="banner-msg" id="stale-banner-msg"></span>
+    </div>
+
+    <!-- Fetch Error Banner (shown on network/parse failure) -->
+    <div id="error-banner">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="error-banner-msg" data-i18n="errFetchStatic">Gagal mengambil data daripada Google Sheets. Semak sambungan atau URL API anda.</span>
+    </div>
+
+    <!-- Simulated-station notice (shown only for non-IoT demo stations) -->
+    <div id="sim-banner" class="sim-banner" role="status" data-i18n-html="simBanner">
+      🧪 <strong>DATA SIMULASI</strong>&nbsp;— Stesen ini menjana data tiruan untuk tujuan demonstrasi, bukan bacaan sensor sebenar.
+    </div>
+
+
+    <!-- ═══ CONNECTIVITY PANEL (Station 1 / IoT only) ═══ -->
+    <div class="conn-panel" id="conn-panel">
+      <div class="conn-panel-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6C1 6 5 2 12 2s11 4 11 4"/><path d="M5 10s2.5-2.5 7-2.5S19 10 19 10"/><path d="M9 14s1.5-1.5 3-1.5 3 1.5 3 1.5"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>
+        <span data-i18n="connTitle">Sambungan Nod — Stesen 1: Pelabuhan Klang</span>
+      </div>
+      <div class="conn-status-row">
+        <div class="conn-indicator ci-offline" id="conn-indicator">
+          <div class="conn-dot"></div>
+          <span id="conn-indicator-label" data-i18n="connChecking">Memeriksa…</span>
+        </div>
+        <div class="conn-stats">
+          <div class="conn-stat">
+            <span class="conn-stat-label" data-i18n="connLastPost">Pos Terakhir</span>
+            <span class="conn-stat-value none" id="conn-last-post">—</span>
+          </div>
+          <div class="conn-stat">
+            <span class="conn-stat-label" data-i18n="connAge">Masa Berlalu</span>
+            <span class="conn-stat-value none" id="conn-age">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more">
+            <span class="conn-stat-label" data-i18n="connCount">Jumlah Bacaan (24j)</span>
+            <span class="conn-stat-value none" id="conn-count">—</span>
+          </div>
+          <div class="conn-stat">
+            <span class="conn-stat-label" data-i18n="connLastVal">Paras Terakhir</span>
+            <span class="conn-stat-value none" id="conn-last-val">—</span>
+          </div>
+          <div class="conn-stat">
+            <span class="conn-stat-label" data-i18n="connBat">Bateri Nod</span>
+            <span class="conn-stat-value none" id="conn-bat">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more">
+            <span class="conn-stat-label" data-i18n="connSnr">Isyarat (SNR)</span>
+            <span class="conn-stat-value none" id="conn-snr">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more" id="conn-tilt-wrap" hidden>
+            <span class="conn-stat-label" data-i18n="connTilt">Kecondongan</span>
+            <span class="conn-stat-value" id="conn-tilt">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more" id="conn-pres-wrap" hidden>
+            <span class="conn-stat-label" data-i18n="connPres">Tekanan Udara</span>
+            <span class="conn-stat-value" id="conn-pres">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more" id="conn-sensor-wrap" hidden>
+            <span class="conn-stat-label" data-i18n="connSensor">Sensor Jarak</span>
+            <span class="conn-stat-value" id="conn-sensor">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more" id="conn-us-wrap" hidden>
+            <span class="conn-stat-label" data-i18n="connUs">Paras Ultrasonik</span>
+            <span class="conn-stat-value" id="conn-us" data-i18n-title="connUsTitle" title="Bacaan sensor ultrasonik pada datum yang sama; Δ = ultrasonik − bacaan utama (radar)">—</span>
+          </div>
+          <div class="conn-stat conn-stat-more">
+            <span class="conn-stat-label" data-i18n="connQc">Kualiti Rujukan (24j)</span>
+            <span class="conn-stat-value none" id="conn-qc" data-i18n-title="connQcTitle" title="Kualiti tetingkap sebagai rujukan pasang surut: % bacaan dengan jam RTC sah, bilangan gap >10 min, dan sisihan piawai pancaran terburuk">—</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="conn-more-btn" id="conn-more-btn" aria-expanded="false">Butiran lanjut</button>
+      <div class="conn-freshness-bar">
+        <div class="conn-freshness-label">
+          <span data-i18n="connFreshLabel">Kesegaran Data (0 = baru, 15 min = had amaran)</span>
+          <span id="conn-freshness-pct">—</span>
+        </div>
+        <div class="conn-bar-track">
+          <div class="conn-bar-fill dead" id="conn-bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Station Header -->
+    <div class="station-header">
+      <div class="station-header-left">
+        <div class="breadcrumb"><span data-i18n="breadcrumb">Papan Pemuka</span> › <span id="breadcrumb-station">Stesen 1</span></div>
+        <div class="station-title" id="main-station-name">Stesen 1: Pelabuhan Klang</div>
+        <div class="station-header-meta">
+          <div class="station-subtitle" id="main-station-meta">Koordinat: 3.0508° N, 101.3561° E · Zon Waktu: MYT (UTC+8)</div>
+          <span id="station-status-badge" class="station-status-badge ssb-offline" data-i18n="stLoading">Memuatkan…</span>
+        </div>
+      </div>
+      <div class="station-header-right">
+        <select id="export-datum-sel" class="btn-secondary" title="Datum menegak untuk eksport CSV">
+          <option value="GAUGE" data-i18n="datumGauge">Datum: Tolok</option>
+          <option value="CD">Datum: CD</option>
+          <option value="MSL">Datum: MSL</option>
+        </select>
+        <button class="refresh-btn btn-secondary" id="export-csv-btn" title="Muat turun data sebagai CSV" data-i18n-title="exportCsvTitle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="btn-export-text">Eksport CSV</span>
+        </button>
+        <label class="export-range-toggle" data-i18n-title="exportRangeTitle" title="Eksport hanya tetingkap yang dipaparkan pada graf; tanpa tanda = keseluruhan set data">
+          <input type="checkbox" id="export-range-only">
+          <span data-i18n="exportRangeOnly">Julat dipilih sahaja</span>
+        </label>
+        <button class="refresh-btn" id="refresh-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span id="refresh-btn-text">Muat Semula</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="metric-grid">
+      <div class="metric-card card-level" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tLevel">Paras Air Semasa</div>
+        <div class="metric-value" id="card-level">—<span class="metric-unit">m</span></div>
+        <div class="metric-sub" id="card-level-sub" data-i18n="tLevelLoading">Sedang mengambil data…</div>
+      </div>
+      <div class="metric-card card-status" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tStatus">Status Pasang Surut</div>
+        <div id="card-status-pill"><span class="status-pill status-high">—</span></div>
+        <div class="metric-sub" id="card-status-sub">—</div>
+      </div>
+      <div class="metric-card card-trend" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tRate">Kadar Perubahan</div>
+        <div class="metric-value" id="card-trend">—<span class="metric-unit">mm/min</span></div>
+        <div class="metric-sub" id="card-trend-sub">—</div>
+      </div>
+      <div class="metric-card card-updated" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tUpdated">Kemaskini Terakhir</div>
+        <div class="metric-value metric-value-time" id="card-updated">--:--</div>
+        <div class="metric-sub" id="card-updated-sub">—</div>
+      </div>
+      <div class="metric-card card-temp" id="card-temp-wrap" data-jump="temp-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tTemp">Suhu Terkini</div>
+        <div class="metric-value" id="card-temp">—<span class="metric-unit">°C</span></div>
+        <div id="card-temp-warn"></div>
+        <div class="metric-sub" id="card-temp-sub">—</div>
+      </div>
+      <div class="metric-card card-humid" data-jump="humid-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tHumid">Kelembapan Terkini</div>
+        <div class="metric-value" id="card-humid">—<span class="metric-unit">%</span></div>
+        <div class="metric-sub" id="card-humid-sub">—</div>
+      </div>
+      <div class="metric-card card-anomaly" id="card-anomaly-wrap" data-jump="main-chart-card" role="button" tabindex="0" data-i18n-title="cardJumpTitle" title="Klik untuk ke graf berkaitan">
+        <div class="metric-label" data-i18n="tAnom">Bacaan Anomali</div>
+        <div class="metric-value" id="card-anomaly">—</div>
+        <div class="metric-sub" id="card-anomaly-sub" data-i18n="anomNone">Tiada anomali dikesan</div>
+      </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="chart-card" id="main-chart-card">
+      <div class="chart-card-header">
+        <div>
+          <div class="chart-card-title" data-i18n="chartTitle">Graf Pasang Surut</div>
+          <div class="chart-card-subtitle" id="chart-date-range">FinalReading_m (meter) berbanding masa (MYT) &nbsp;·&nbsp; <span id="chart-avg-display" class="chart-avg">—</span></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot legend-dot-level"></div> <span data-i18n="legendLevel">Paras Air (Bacaan Akhir)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot legend-dot-avg"></div> <span data-i18n="legendAvg">Purata (Dikira)</span>
+          </div>
+          <button type="button" class="legend-item legend-toggle" id="legend-anom-toggle" hidden
+                  aria-pressed="true" data-i18n-title="anomToggleTitle" title="Tunjuk/sembunyi penanda anomali">
+            <div class="legend-dot legend-dot-anom"></div> <span><span data-i18n="legendAnom">Anomali</span> (<span id="legend-anom-count">0</span>)</span>
+          </button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="mainChart" role="img" aria-label="Carta paras air (meter) mengikut masa bagi stesen terpilih"></canvas>
+        <div id="select-overlay"></div>
+        <div class="chart-drag-hint" id="chart-drag-hint">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="hint-icon"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+          <span data-i18n="dragHint">Seret pada graf untuk zum kawasan</span>
+        </div>
+      </div>
+
+      <!-- Selection info bar (shown after drag-select) -->
+      <div class="chart-selection-bar" id="chart-selection-bar">
+        <span class="sel-bar-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+          <span data-i18n="selLabel">Pilihan</span>
+        </span>
+        <span class="sel-bar-range" id="sel-bar-range">—</span>
+        <div class="sel-bar-stats">
+          <div class="sel-stat"><span class="sel-stat-label" data-i18n="selPts">Titik</span><span class="sel-stat-value" id="sel-stat-pts">—</span></div>
+          <div class="sel-stat"><span class="sel-stat-label">Min</span><span class="sel-stat-value" id="sel-stat-min">—</span></div>
+          <div class="sel-stat"><span class="sel-stat-label" data-i18n="selMax">Maks</span><span class="sel-stat-value" id="sel-stat-max">—</span></div>
+          <div class="sel-stat"><span class="sel-stat-label" data-i18n="selAvg">Purata</span><span class="sel-stat-value" id="sel-stat-avg">—</span></div>
+          <div class="sel-stat"><span class="sel-stat-label" data-i18n="selRange">Julat</span><span class="sel-stat-value" id="sel-stat-rng">—</span></div>
+        </div>
+        <button class="zoom-out-btn" id="zoom-out-btn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          <span data-i18n="zoomOut">Zum Keluar</span>
+        </button>
+      </div>
+
+      <!-- Window toolbar: TIME-based presets anchored to the newest reading -->
+      <div class="zoom-toolbar">
+        <span class="zoom-toolbar-label" data-i18n="quickZoom">Zum Cepat</span>
+        <div class="zoom-seg" role="group">
+          <button class="zoom-preset-btn" data-preset="6h"  data-i18n="p6h">6J</button>
+          <button class="zoom-preset-btn active" data-preset="24h" data-i18n="p24h">24J</button>
+          <button class="zoom-preset-btn" data-preset="7d"  data-i18n="p7d" data-i18n-title="p7dTitle" title="7 hari — satu minggu">7H</button>
+          <button class="zoom-preset-btn" data-preset="30d" data-i18n="p30d" data-i18n-title="p30dTitle" title="30 hari — analisis harmonik">30H</button>
+          <div class="zoom-more" id="zoom-more">
+            <button type="button" class="zoom-more-btn" id="zoom-more-btn" aria-haspopup="true" aria-expanded="false">
+              <span id="zoom-more-label">Lagi</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="zoom-more-menu" id="zoom-more-menu">
+              <button class="zoom-preset-btn" data-preset="1h"  data-i18n="p1h">1J</button>
+              <button class="zoom-preset-btn" data-preset="3h"  data-i18n="p3h">3J</button>
+              <button class="zoom-preset-btn" data-preset="12h" data-i18n="p12h">12J</button>
+              <button class="zoom-preset-btn" data-preset="15d" data-i18n="p15d" data-i18n-title="p15dTitle" title="15 hari — kitaran pasang perbani/anak">15H</button>
+              <button class="zoom-preset-btn" data-preset="today" data-i18n="pToday">Hari ini</button>
+              <button class="zoom-preset-btn" data-preset="all" data-i18n="pAll">Semua</button>
+            </div>
+          </div>
+        </div>
+        <div class="zoom-actions">
+          <button class="zoom-live-btn" id="zoom-live-btn" data-i18n="latest" data-i18n-title="latestTitle" title="Kembali ke bacaan terbaharu">Terkini</button>
+          <button class="ctrl-reset-btn" id="zoom-reset-inline-btn">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+            <span data-i18n="reset">Set Semula</span>
+          </button>
+        </div>
+      </div>
+      <!-- What is actually on the chart right now (so a mislabelled window can never hide) -->
+      <div class="window-span" id="window-span" aria-live="polite">—</div>
+
+      <!-- Chart Controls -->
+      <div class="chart-controls">
+
+        <!-- Date & time range — ONE calendar: click a start day, click an end day, set times -->
+        <div class="ctrl-group">
+          <span class="ctrl-label" data-i18n="rangeLabel">Julat Tarikh &amp; Masa</span>
+          <div class="ctrl-dt-row">
+            <div class="cal-wrap" id="cal-wrap">
+              <button class="cal-trigger" id="cal-btn" type="button" aria-haspopup="dialog">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span id="cal-label">Julat…</span>
+              </button>
+              <div class="cal-popup" id="cal-popup" role="dialog" aria-label="Pilih julat tarikh"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced: newest-N-points cap (cadence-dependent — hidden by default) -->
+        <div class="ctrl-group ctrl-advanced" id="ctrl-advanced">
+          <button class="ctrl-adv-toggle" id="ctrl-adv-toggle" type="button" aria-expanded="false" aria-controls="ctrl-adv-body">
+            <span class="chev">&#9656;</span> <span data-i18n="advanced">Lanjutan</span>
+          </button>
+          <div class="ctrl-adv-body" id="ctrl-adv-body">
+            <span class="ctrl-label" data-i18n="pointsLabel">Bilangan Titik Data</span>
+            <div class="ctrl-slider-row">
+              <input type="range" id="pts-slider" class="ctrl-slider" min="6" max="144" step="1" value="144">
+              <input type="number" id="pts-input" class="ctrl-number" min="6" max="144" step="1" value="144">
+              <span class="ctrl-pts-badge" id="pts-badge">144 / 144</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Temperature & Humidity Charts -->
+    <div class="env-chart-grid">
+
+      <!-- Temperature Chart -->
+      <div class="chart-card" id="temp-chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="env-chart-card-title" data-i18n="tempChart">Graf Suhu</div>
+            <div class="env-chart-card-subtitle"><span data-i18n="tempChartSub">Suhu persekitaran (°C) berbanding masa</span> &nbsp;·&nbsp; <span id="temp-chart-stat" class="env-stat env-stat-temp">—</span></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot legend-dot-temp"></div> <span data-i18n="legendTemp">Suhu (°C)</span></div>
+            <div class="legend-item"><div class="legend-dot legend-dot-mean"></div> <span data-i18n="legendMean">Purata</span></div>
+          </div>
+        </div>
+        <div class="env-chart-wrap" id="temp-chart-wrap">
+          <canvas id="tempChart" role="img" aria-label="Carta suhu (°C) mengikut masa"></canvas>
+          <div class="env-no-data" id="temp-no-data" style="display:none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+            <span data-i18n="tempNoData">Tiada data suhu tersedia</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Humidity Chart -->
+      <div class="chart-card" id="humid-chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="env-chart-card-title" data-i18n="humidChart">Graf Kelembapan</div>
+            <div class="env-chart-card-subtitle"><span data-i18n="humidChartSub">Kelembapan relatif (%) berbanding masa</span> &nbsp;·&nbsp; <span id="humid-chart-stat" class="env-stat env-stat-humid">—</span></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot legend-dot-humid"></div> <span data-i18n="legendHumid">Kelembapan (%)</span></div>
+            <div class="legend-item"><div class="legend-dot legend-dot-mean"></div> <span data-i18n="legendMean">Purata</span></div>
+          </div>
+        </div>
+        <div class="env-chart-wrap" id="humid-chart-wrap">
+          <canvas id="humidChart" role="img" aria-label="Carta kelembapan (%) mengikut masa"></canvas>
+          <div class="env-no-data" id="humid-no-data" style="display:none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            <span data-i18n="humidNoData">Tiada data kelembapan tersedia</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="bottom-grid">
+      <!-- Station Info / System Info Tabs -->
+      <div class="info-card">
+        <!-- Tab Selector -->
+        <div class="info-tab-bar">
+          <button class="info-tab active" id="tab-stesen" data-tab="stesen">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span data-i18n="tabStation">Maklumat Stesen</span>
+          </button>
+          <button class="info-tab" id="tab-sistem" data-tab="sistem">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span data-i18n="tabSystem">Maklumat Sistem</span>
+          </button>
+        </div>
+
+        <!-- Panel: Maklumat Stesen -->
+        <div id="panel-stesen" class="info-panel active">
+          <div class="info-row">
+            <span class="key" data-i18n="infoId">ID Stesen</span>
+            <span class="val" id="info-id">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key" data-i18n="infoLat">Latitud</span>
+            <span class="val" id="info-lat">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key" data-i18n="infoLng">Longitud</span>
+            <span class="val" id="info-lng">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key" data-i18n="infoType">Jenis Sensor</span>
+            <span class="val" id="info-type">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key" data-i18n="infoMax">Paras Tertinggi (24j)</span>
+            <span class="val" id="info-max">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key" data-i18n="infoMin">Paras Terendah (24j)</span>
+            <span class="val" id="info-min">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key" data-i18n="infoAmp">Amplitud</span>
+            <span class="val" id="info-amp">—</span>
+          </div>
+          <!-- Station map -->
+          <div class="station-map-wrap">
+            <div id="station-map"></div>
+          </div>
+        </div>
+
+        <!-- Panel: Maklumat Sistem -->
+        <div id="panel-sistem" class="info-panel">
+          <div class="sistem-header" data-i18n="sysHeader">Komponen Perkakasan</div>
+          <div class="sistem-sensor-card">
+            <div class="sistem-sensor-icon">📶</div>
+            <div class="sistem-sensor-body">
+              <div class="sistem-sensor-name" data-i18n="sysRadarName">Radar HLK-LD2413 (24 GHz)</div>
+            </div>
+          </div>
+          <div class="sistem-sensor-card">
+            <div class="sistem-sensor-icon">🌡</div>
+            <div class="sistem-sensor-body">
+              <div class="sistem-sensor-name" data-i18n="sysEnvName">Sensor SHT3x</div>
+            </div>
+          </div>
+          <div class="sistem-sensor-card">
+            <div class="sistem-sensor-icon">⏱</div>
+            <div class="sistem-sensor-body">
+              <div class="sistem-sensor-name" data-i18n="sysRtcName">RTC DS3231</div>
+            </div>
+          </div>
+          <div class="sistem-sensor-card">
+            <div class="sistem-sensor-icon">💾</div>
+            <div class="sistem-sensor-body">
+              <div class="sistem-sensor-name" data-i18n="sysSdName">Kad Micro SD</div>
+            </div>
+          </div>
+          <div class="sistem-sensor-card">
+            <div class="sistem-sensor-icon">📡</div>
+            <div class="sistem-sensor-body">
+              <div class="sistem-sensor-name" data-i18n="sysLoraName">LoRa SX1262 (923 MHz)</div>
+            </div>
+          </div>
+          <div class="sistem-footer-note" data-i18n="sysFooter">Platform: LilyGO T3-S3 (ESP32-S3), nod tidur dalam · LoRa 923 MHz → get laluan XIAO ESP32-C3 → HTTPS ke Google Apps Script · Empat lapisan perlindungan data: SD → LoRa+ACK → WiFi → baris gilir cuba semula</div>
+        </div>
+      </div>
+      <!-- Trend mini chart -->
+      <div class="info-card">
+        <div class="info-card-title" data-i18n="trend6h">Trend 6 Jam Terkini</div>
+        <div class="mini-chart-wrap">
+          <canvas id="miniChart" role="img" aria-label="Carta ringkas trend paras air terkini"></canvas>
+        </div>
+        <div id="tide-events-block">
+          <div class="info-card-title info-card-title-spaced" data-i18n="tideEventsTitle">Air Pasang &amp; Surut Terkini</div>
+          <div id="tide-events"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-sensor distance charts (real station only): radar vs ultrasonic,
+         each sensor's range to the water in cm, on the same window as above -->
+    <div class="env-chart-grid sensor-chart-grid" id="sensor-chart-grid">
+
+      <!-- Radar distance -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="env-chart-card-title" data-i18n="radarChart">Jarak Radar</div>
+            <div class="env-chart-card-subtitle"><span data-i18n="radarChartSub" data-i18n-title="distDerivTitle" title="Dikira daripada awan: datum − paras air (hanya baris yang dibaca oleh radar)">Jarak radar ke permukaan air (cm) berbanding masa</span> &nbsp;·&nbsp; <span id="radar-chart-stat" class="sensor-stat sensor-stat-radar">—</span></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot legend-dot-radar"></div> <span data-i18n="legendRadar">Radar (cm)</span></div>
+            <div class="legend-item"><div class="legend-dot legend-dot-mean"></div> <span data-i18n="legendMean">Purata</span></div>
+          </div>
+        </div>
+        <div class="env-chart-wrap sensor-chart-wrap">
+          <canvas id="radarChart" role="img" aria-label="Carta jarak radar (cm) mengikut masa" data-i18n-aria="radarChartAria"></canvas>
+          <div class="env-no-data" id="radar-no-data" style="display:none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <span data-i18n="radarNoData">Tiada data radar dalam tetingkap ini</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ultrasonic distance -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="env-chart-card-title" data-i18n="usChart">Jarak Ultrasonik</div>
+            <div class="env-chart-card-subtitle"><span data-i18n="usChartSub" data-i18n-title="distDerivUsTitle" title="Dikira daripada awan: datum − paras ultrasonik (termasuk anjakan Config us_offset_cm)">Jarak ultrasonik ke permukaan air (cm) berbanding masa</span> &nbsp;·&nbsp; <span id="us-chart-stat" class="sensor-stat sensor-stat-us">—</span></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot legend-dot-us"></div> <span data-i18n="legendUs">Ultrasonik (cm)</span></div>
+            <div class="legend-item"><div class="legend-dot legend-dot-mean"></div> <span data-i18n="legendMean">Purata</span></div>
+          </div>
+        </div>
+        <div class="env-chart-wrap sensor-chart-wrap">
+          <canvas id="usChart" role="img" aria-label="Carta jarak ultrasonik (cm) mengikut masa" data-i18n-aria="usChartAria"></canvas>
+          <div class="env-no-data" id="us-no-data" style="display:none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <span data-i18n="usNoData">Tiada data ultrasonik dalam tetingkap ini</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer id="footer">
+  <span class="footer-logo">KAB STAR</span>
+  <span>Sains Ukur Geomatik · UiTM Shah Alam · CFAP2206B</span>
+</footer>
+
+<!-- The app: main.js imports every other file in js/ -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

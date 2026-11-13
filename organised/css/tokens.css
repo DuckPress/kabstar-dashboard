@@ -1,0 +1,66 @@
+/* Design tokens: fonts, colours, spacing and shadows as CSS variables,
+   plus their dark-mode values. Every other file uses these variables. */
+
+:root {
+  /* Typography: Inter (Google Fonts) — a UI face built for screens with
+     tabular figures, so numeric readouts align without a monospace font.
+     Falls back to Roboto / IBM Plex Sans, then the OS sans (Helvetica on
+     macOS/iOS, Arial elsewhere) while the web font loads or offline. */
+  --font-sans: "Inter", "Roboto", "IBM Plex Sans", Helvetica, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  --font-mono: "Inter", "Roboto", "IBM Plex Sans", Helvetica, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  --mono:      var(--font-mono);
+  --navy:       #0d2149;
+  --navy-mid:   #163272;
+  --navy-light: #1e4096;
+  --gold:       #c9a227;
+  --gold-light: #e8bf4a;
+  --gold-pale:  #fdf3d4;
+  --white:      #ffffff;
+  --gray-50:    #f7f8fc;
+  --gray-100:   #eef0f6;
+  --gray-200:   #d6daea;
+  --gray-400:   #8b93b0;
+  --gray-600:   #4c5577;
+  --text-dark:  #0d1832;
+  --text-mid:   #2d3a5e;
+  --text-muted: #6b748f;
+  --green:      #1a9e5f;
+  --red:        #c0392b;
+  --sidebar-w:  280px;
+  --topbar-h:   64px;
+  --radius:     10px;
+  --shadow-sm:  0 1px 4px rgba(13,33,73,0.10);
+  --shadow-md:  0 4px 18px rgba(13,33,73,0.13);
+  --shadow-lg:  0 8px 32px rgba(13,33,73,0.18);
+  /* Theme-aware roles. --white is the CARD SURFACE (it turns dark in dark
+     mode), so text drawn on navy/accent fills must use --on-accent instead. */
+  --on-accent:    #ffffff;
+  --accent:       var(--navy);        /* filled buttons / active chips & tabs */
+  --accent-hover: var(--navy-light);
+  --link:         var(--navy-light);  /* breadcrumb, links, "high" labels */
+  --chart-bg:     #eef1f7;            /* graph cards: a shade under the white cards (light mode only) */
+}
+
+/* Dark theme — remaps surface/text variables; navy & gold accents persist */
+:root[data-theme="dark"] {
+  --white:      #161b2e;
+  --gray-50:    #0e1322;
+  --gray-100:   #20284a;
+  --gray-200:   #2c3760;
+  --gray-400:   #8b93b0;
+  --gray-600:   #aab2cc;
+  --text-dark:  #eef1fb;
+  --text-mid:   #c7cee6;
+  --text-muted: #959ec0;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.40);
+  --shadow-md:  0 4px 18px rgba(0,0,0,0.50);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.60);
+  --accent:       #2f56b8;            /* navy would vanish on dark cards */
+  --accent-hover: #3d67d4;
+  --link:         #8fb0ff;
+  --chart-bg:     var(--white);       /* dark mode keeps the plain card surface */
+}
+
+/* Sensor colours for the radar / ultrasonic charts (match chartTheme() in js/charts/theme.js) */
+:root { --sensor-radar: #1e4096; --sensor-us: #6b748f; }
+:root[data-theme="dark"] { --sensor-radar: #6f9bff; --sensor-us: #aab2cc; }

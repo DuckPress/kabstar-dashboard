@@ -1,0 +1,62 @@
+/* Small reusable pieces used all over the page: top-bar buttons, pills,
+   text helpers and the sidebar scrollbar. */
+
+/* ─── Reusable component classes (replace scattered inline styles) ─── */
+.topbar-btn {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  transition: background 0.18s;
+}
+.topbar-btn:hover { background: rgba(255,255,255,0.18); }
+.topbar-btn.icon-only { padding: 7px 10px; font-size: 14px; }
+
+.sim-banner {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: #fdf4ff;
+  border: 1px solid rgba(147,51,234,0.35);
+  border-left: 4px solid #9333ea;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #7e22ce;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.sim-banner.visible { display: flex; }
+:root[data-theme="dark"] .sim-banner { background: #2a1840; color: #e9b8ff; }
+
+.tide-high { color: var(--link); font-weight: 600; }
+.tide-low  { color: #a07d10; font-weight: 600; }
+:root[data-theme="dark"] .tide-low { color: var(--gold-light); }
+
+.chart-surge { color: var(--red);  font-weight: 600; }
+.chart-avg   { color: var(--gold); font-weight: 600; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background: var(--gray-50);
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+/* ─── SCROLLBAR ─── */
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-track { background: transparent; }
+#sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
