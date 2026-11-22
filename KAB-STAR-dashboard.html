@@ -5137,8 +5137,17 @@ function _buildEnvChartConfig(ctx, data, labels, timestamps, color, unit, thresh
         title: (items) => {
           if (!items.length) return '';
           const c  = items[0].chart;
-          const ts = (c._tsStrings || [])[items[0].dataIndex];
-          return ts && ts.length >= 16 ? fmtTsLong(ts) : ((c._labels || [])[items[0].dataIndex] || '');
+          // Decimation (LTTB) is on here, so dataIndex counts the thinned
+          // points, not the full series: never index _tsStrings with it. The
+          // point's own x is the reading's epoch ms (timed axis) or its index.
+          const x  = items[0].parsed.x;
+          if (x > 1e11) {
+            const d = new Date(x + MYT_OFFSET_MS), p = n => String(n).padStart(2, '0');
+            return `${p(d.getUTCDate())}/${p(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+          }
+          const i  = Math.round(x);
+          const ts = (c._tsStrings || [])[i];
+          return ts && ts.length >= 16 ? fmtTsLong(ts) : ((c._labels || [])[i] || '');
         },
         label: (c) => `  ${dsLabel}: ${c.parsed.y.toFixed(1)} ${unit}`,
       },
