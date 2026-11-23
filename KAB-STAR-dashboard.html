@@ -5100,18 +5100,43 @@ function renderMiniChart(labels, values) {
    Same time axis as the main chart (timeAxisX), so the three line up and an
    outage shows at its real width.
 ═══════════════════════════════════════════════════ */
+// The env and sensor-distance charts draw at most this many points;
+// envSeries() thins longer windows itself, so Chart.js's decimation is off.
+const ENV_CHART_MAX_PTS = 400;
+
 // {x, y} points + x positions for an env series: real time when every stamp
 // parses, else the point index (sim/legacy data).
+// Outages are decided HERE, on the raw readings, before any thinning: where no
+// valid reading arrives for longer than gapSpanMs, one null point goes in the
+// middle of the hole, and only those nulls break the line (spanGaps: false).
+// Measuring the gap on thinned points instead drew false outages, because
+// thinning alone leaves 10+ minutes between kept points on a 24 h window.
 function envSeries(data, timestamps) {
   let xs = (timestamps && timestamps.length === data.length) ? timestamps.map(mytMs) : null;
   if (xs && xs.some(x => isNaN(x))) xs = null;
-  const X = i => xs ? xs[i] : i;
-  const nums = data.filter(v => v !== null && !isNaN(v));
+  const ok   = v => v !== null && v !== undefined && !isNaN(v);
+  const nums = data.filter(ok);
   const avg  = nums.length ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length * 10) / 10 : null;
+  let px = [], py = [];
+  if (xs) {
+    const gap = gapSpanMs(xs);
+    let prev = null;
+    for (let i = 0; i < data.length; i++) {
+      if (!ok(data[i])) continue;   // invalid reading: a short run is bridged, a long one becomes a hole
+      if (prev !== null && xs[i] - prev > gap) { px.push((prev + xs[i]) / 2); py.push(null); }
+      px.push(xs[i]); py.push(data[i]); prev = xs[i];
+    }
+  } else {
+    px = data.map((_, i) => i);
+    py = data.map(v => ok(v) ? v : null);
+  }
+  const idx = lttbIndices(py, ENV_CHART_MAX_PTS);   // keeps a null wherever a bucket holds one
+  if (idx) { px = idx.map(i => px[i]); py = idx.map(i => py[i]); }
+  const x0 = xs ? xs[0] : 0, x1 = xs ? xs[xs.length - 1] : data.length - 1;
   return {
     xs,
-    pts: data.map((y, i) => ({ x: X(i), y: (y === undefined ? null : y) })),
-    avg: (avg === null || !data.length) ? [] : [{ x: X(0), y: avg }, { x: X(data.length - 1), y: avg }],
+    pts: px.map((x, i) => ({ x, y: py[i] })),
+    avg: (avg === null || !data.length) ? [] : [{ x: x0, y: avg }, { x: x1, y: avg }],
   };
 }
 
@@ -5123,7 +5148,7 @@ function _buildEnvChartConfig(ctx, data, labels, timestamps, color, unit, thresh
   const dsLabel = (style && style.label) || (unit === '°C' ? T('ttTemp') : T('ttHumid'));
 
   const plugins = {
-    decimation: { enabled: true, algorithm: 'lttb', samples: 200, threshold: 200 },
+    decimation: { enabled: false },   // envSeries() already thinned the series
     legend: { display: false },
     tooltip: {
       backgroundColor: '#0d2149',
@@ -5137,7 +5162,7 @@ function _buildEnvChartConfig(ctx, data, labels, timestamps, color, unit, thresh
         title: (items) => {
           if (!items.length) return '';
           const c  = items[0].chart;
-          // Decimation (LTTB) is on here, so dataIndex counts the thinned
+          // envSeries() thins the series (LTTB), so dataIndex counts the thinned
           // points, not the full series: never index _tsStrings with it. The
           // point's own x is the reading's epoch ms (timed axis) or its index.
           const x  = items[0].parsed.x;
@@ -5197,7 +5222,7 @@ function _buildEnvChartConfig(ctx, data, labels, timestamps, color, unit, thresh
           pointHoverRadius: 4,
           pointHoverBackgroundColor: color,
           fill: true,
-          spanGaps: s.xs ? gapSpanMs(s.xs) : false,
+          spanGaps: false,   // only envSeries()'s outage nulls (and sim-data nulls) break the line
           backgroundColor: (ctx2) => {
             const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, ctx2.chart.height);
             g.addColorStop(0, gradTop);
