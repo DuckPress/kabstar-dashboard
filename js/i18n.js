@@ -107,8 +107,8 @@ export const I18N = {
     sysEnvName: 'Sensor SHT3x',
     sysRtcName: 'RTC DS3231',
     sysSdName: 'Kad Micro SD',
-    sysLoraName: 'LoRa SX1262 (923 MHz)',
-    sysFooter: 'Platform: LilyGO T3-S3 (ESP32-S3), nod tidur dalam · LoRa 923 MHz → get laluan XIAO ESP32-C3 → HTTPS ke Google Apps Script · Empat lapisan perlindungan data: SD → LoRa+ACK → WiFi → baris gilir cuba semula',
+    sysLoraName: 'LoRa SX1262 (922 MHz)',
+    sysFooter: 'Platform: LilyGO T3-S3 (ESP32-S3), nod tidur dalam · LoRa 922 MHz → get laluan XIAO ESP32-C3 → HTTPS ke Google Apps Script · Empat lapisan perlindungan data: SD → LoRa+ACK → WiFi → baris gilir cuba semula',
   },
   en: {
     locale: 'en-GB',
@@ -197,8 +197,8 @@ export const I18N = {
     sysEnvName: 'SHT3x Sensor',
     sysRtcName: 'DS3231 RTC',
     sysSdName: 'Micro SD Card',
-    sysLoraName: 'LoRa SX1262 (923 MHz)',
-    sysFooter: 'Platform: LilyGO T3-S3 (ESP32-S3) deep-sleep node · LoRa 923 MHz → XIAO ESP32-C3 gateway → HTTPS to Google Apps Script · Four layers of data protection: SD → LoRa+ACK → WiFi → retry queues',
+    sysLoraName: 'LoRa SX1262 (922 MHz)',
+    sysFooter: 'Platform: LilyGO T3-S3 (ESP32-S3) deep-sleep node · LoRa 922 MHz → XIAO ESP32-C3 gateway → HTTPS to Google Apps Script · Four layers of data protection: SD → LoRa+ACK → WiFi → retry queues',
   },
 };
 
